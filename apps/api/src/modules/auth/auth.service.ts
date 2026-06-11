@@ -57,7 +57,7 @@ export class AuthService {
   async anonymousLogin(dto: AnonymousLoginDto): Promise<AuthResponse> {
     const trustScore = resolveTrustScore({ authProvider: AuthProvider.ANONYMOUS });
 
-    let respondent = await this.findOrCreateAnonymous(
+    const respondent = await this.findOrCreateAnonymous(
       dto.fingerprint ?? null,
       dto.preferredLanguage ?? Language.HE,
       trustScore,

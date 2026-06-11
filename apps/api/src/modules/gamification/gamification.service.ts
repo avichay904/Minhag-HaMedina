@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { rankForStats } from '@mhm/shared';
 import type { BadgeStats, Category } from '@mhm/shared';
 
 import { PrismaService } from '../../common/prisma/prisma.service';

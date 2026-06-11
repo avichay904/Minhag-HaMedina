@@ -311,7 +311,7 @@ async function main(): Promise<void> {
     qBreastExam,        // 5  HEALTH_LIFESTYLE yes_no   gender FEMALE
     qAiConcern,         // 6  TECHNOLOGY       scale1-10 minTrust 0.7
     qBrowseDevice,      // 7  TECHNOLOGY       single   general
-    qSavings,           // 8  PERSONAL_FINANCE yes_no   region TLV
+    _qSavings,          // 8  PERSONAL_FINANCE yes_no   region TLV
     qFinStress,         // 9  PERSONAL_FINANCE scale1-5 general
     qSymbol,            // 10 GENERAL          text_img general
     qNewsSource,        // 11 GENERAL          single   general
