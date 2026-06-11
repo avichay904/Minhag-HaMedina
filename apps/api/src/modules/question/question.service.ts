@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import {
   filterServableQuestions,
@@ -7,7 +8,7 @@ import {
   type ServableQuestion,
   type Targeting,
 } from '@mhm/shared';
-import type { ChoiceOption, QuestionDto } from '@mhm/contracts';
+import type { ChoiceOptionDto, QuestionDto } from '@mhm/contracts';
 
 import { PrismaService } from '../../common/prisma/prisma.service';
 import type { IQuestionService } from '../../common/facades';
@@ -92,7 +93,7 @@ export class QuestionService implements IQuestionService {
         type: dto.type,
         scaleMin: dto.scaleMin ?? null,
         scaleMax: dto.scaleMax ?? null,
-        options: dto.options ?? null,
+        options: dto.options != null ? dto.options : Prisma.JsonNull,
         imageUrl: dto.imageUrl ?? null,
         expiresAfterCycles: dto.expiresAfterCycles ?? null,
         targeting: dto.targeting ?? {},
@@ -129,7 +130,7 @@ export class QuestionService implements IQuestionService {
       textEn: q.textEn,
       scaleMin: q.scaleMin,
       scaleMax: q.scaleMax,
-      options: q.options as ChoiceOption[] | null,
+      options: q.options as ChoiceOptionDto[] | null,
       imageUrl: q.imageUrl,
     };
   }

@@ -28,7 +28,25 @@ const IDENTIFIED_CTX: RespondentContext = {
   language: 'HE',
 };
 
-function makeDbQuestion(overrides: Partial<ReturnType<typeof makeDbQuestion>> = {}) {
+interface DbQuestion {
+  id: string;
+  surveyId: string;
+  category: string;
+  type: string;
+  textHe: string;
+  textEn: string;
+  scaleMin: number | null;
+  scaleMax: number | null;
+  options: unknown;
+  imageUrl: string | null;
+  expiresAfterCycles: number | null;
+  startCycleSequence: number;
+  targeting: unknown;
+  active: boolean;
+  createdAt: Date;
+}
+
+function makeDbQuestion(overrides: Partial<DbQuestion> = {}): DbQuestion {
   return {
     id: 'q-1',
     surveyId: SURVEY_ID,
