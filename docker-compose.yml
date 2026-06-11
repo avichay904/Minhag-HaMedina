@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mhm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mhm
+      POSTGRES_PASSWORD: mhm
+      POSTGRES_DB: minhag_hamedina
+    ports:
+      - '5432:5432'
+    volumes:
+      - mhm_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mhm -d minhag_hamedina']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mhm_pgdata:
