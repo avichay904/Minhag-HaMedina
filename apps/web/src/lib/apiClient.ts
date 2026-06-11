@@ -1,4 +1,4 @@
-import { ENDPOINTS, buildPath, API_PREFIX } from '@mhm/contracts';
+import { ENDPOINTS, buildPath } from '@mhm/contracts';
 import type {
   AuthResponse,
   SocialLoginRequest,

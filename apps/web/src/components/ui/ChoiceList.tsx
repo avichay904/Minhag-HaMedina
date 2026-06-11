@@ -15,13 +15,13 @@ export function ChoiceList({ options, value, onSelect, disabled, lang = 'he' }: 
     <div className="flex flex-col gap-3">
       {options.map((opt) => {
         const label = lang === 'he' ? opt.labelHe : opt.labelEn;
-        const selected = value === opt.value;
+        const selected = value === opt.key;
         return (
           <motion.button
-            key={opt.value}
+            key={opt.key}
             whileTap={{ scale: 0.98 }}
             disabled={disabled}
-            onClick={() => onSelect(opt.value)}
+            onClick={() => onSelect(opt.key)}
             aria-pressed={selected}
             className={clsx(
               'w-full text-start px-5 py-4 rounded-2xl font-medium text-base transition-all duration-150',

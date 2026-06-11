@@ -6,7 +6,6 @@ import { useAuth } from '../auth/useAuth';
 import { FullPageSpinner } from '../../components/ui/Spinner';
 import { RankChip } from '../../components/ui/RankChip';
 import { BadgePill } from '../../components/ui/BadgePill';
-import { Card } from '../../components/ui/Card';
 import type { LeaderboardEntry } from '@mhm/contracts';
 import { clsx } from 'clsx';
 

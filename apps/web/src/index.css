@@ -15,7 +15,74 @@ body,
 body {
   margin: 0;
   font-family: 'Heebo', Arial, system-ui, sans-serif;
-  background: #f7fafc;
+  background: linear-gradient(160deg, #eff6ff 0%, #f7fafc 60%, #ffffff 100%);
+  background-attachment: fixed;
   color: #1e3a5f;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* RTL-aware logical property polyfill for Tailwind v3 */
+[dir='rtl'] .start-0\.5 {
+  right: 0.125rem;
+  left: auto;
+}
+
+[dir='rtl'] .start-\[22px\] {
+  right: 22px;
+  left: auto;
+}
+
+[dir='ltr'] .start-0\.5 {
+  left: 0.125rem;
+  right: auto;
+}
+
+[dir='ltr'] .start-\[22px\] {
+  left: 22px;
+  right: auto;
+}
+
+/* Smooth scrolling */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Better tap highlight on mobile */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus rings respect RTL */
+*:focus-visible {
+  outline: 2px solid #2e75b6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Remove number input arrows */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Gradient text utility */
+@layer utilities {
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(135deg, #2e75b6, #1e3a5f);
+  }
+}
+
+/* Safe area for bottom nav on iOS */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

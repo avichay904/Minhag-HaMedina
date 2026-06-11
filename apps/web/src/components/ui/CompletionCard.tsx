@@ -99,7 +99,7 @@ export function CompletionCard({ questionsAnswered, pointsEarned, newBadges, sur
       )}
 
       <p className="text-sm text-brand-400">
-        {t('completion.community', { count: '1,240' })}
+        {t('completion.community', { count: 1240 })}
       </p>
 
       <div className="flex flex-col gap-3 w-full mt-2">

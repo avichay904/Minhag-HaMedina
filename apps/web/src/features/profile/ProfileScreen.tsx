@@ -24,7 +24,8 @@ export function ProfileScreen() {
   const [preferredLanguage, setPreferredLanguage] = useState<Language>('HE');
   const [preferredCategories, setPreferredCategories] = useState<Category[]>([]);
   const [gender, setGender] = useState<Gender | ''>('');
-  const [birthYear, setBirthYear] = useState('');
+  const [age, setAge] = useState('');
+  const [region, setRegion] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Sync form from profile
@@ -35,7 +36,8 @@ export function ProfileScreen() {
     setPreferredLanguage(profile.preferredLanguage as Language);
     setPreferredCategories(profile.preferredCategories as Category[]);
     setGender((profile.demographics?.gender as Gender | undefined) ?? '');
-    setBirthYear(profile.demographics?.birthYear?.toString() ?? '');
+    setAge(profile.demographics?.age?.toString() ?? '');
+    setRegion(profile.demographics?.region ?? '');
   }, [profile]);
 
   if (!token) return <WelcomeScreen />;
@@ -63,7 +65,8 @@ export function ProfileScreen() {
         preferredCategories: preferredCategories as Category[],
         demographics: {
           gender: gender || undefined,
-          birthYear: birthYear ? parseInt(birthYear, 10) : undefined,
+          age: age ? parseInt(age, 10) : undefined,
+          region: region || undefined,
         },
       });
       await refreshProfile();
@@ -253,11 +256,22 @@ export function ProfileScreen() {
             <label className="text-sm font-medium text-brand-600 mb-1 block">{t('profile.birth_year')}</label>
             <input
               type="number"
-              value={birthYear}
-              onChange={(e) => setBirthYear(e.target.value)}
-              placeholder="1990"
-              min={1920}
-              max={new Date().getFullYear()}
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              placeholder="35"
+              min={0}
+              max={120}
+              className="w-full border-2 border-brand-100 rounded-xl px-4 py-2.5 text-brand-900 placeholder-brand-300 focus:outline-none focus:border-brand-400 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-brand-600 mb-1 block">{t('profile.district')}</label>
+            <input
+              type="text"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              placeholder="תל אביב"
+              maxLength={120}
               className="w-full border-2 border-brand-100 rounded-xl px-4 py-2.5 text-brand-900 placeholder-brand-300 focus:outline-none focus:border-brand-400 transition-colors"
             />
           </div>

@@ -13,7 +13,6 @@ import { ScaleInput } from '../../components/ui/ScaleInput';
 import { ChoiceList } from '../../components/ui/ChoiceList';
 import { CompletionCard } from '../../components/ui/CompletionCard';
 import { RankChip } from '../../components/ui/RankChip';
-import { BadgePill } from '../../components/ui/BadgePill';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { useToast } from '../../components/ui/Toast';
@@ -73,7 +72,6 @@ export function SurveyRunner() {
   const [queueIndex, setQueueIndex] = useState(0);
   const [queue, setQueue] = useState<QuestionDto[]>([]);
   const [direction, setDirection] = useState(1);
-  const [selectedValue, setSelectedValue] = useState<string | number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Answer timing
@@ -114,9 +112,8 @@ export function SurveyRunner() {
 
   const currentQuestion = queue[queueIndex] ?? null;
 
-  // Reset selection on question change
+  // Restart the answer timer on question change
   useEffect(() => {
-    setSelectedValue(null);
     questionStartRef.current = Date.now();
   }, [queueIndex]);
 
