@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
+import { ResultsService } from './results.service';
+import { ResultsController } from './results.controller';
+import { LeaderboardController } from './leaderboard.controller';
 
 // Owner: Worker G (Results & Leaderboard).
-// Add: results.controller.ts, results.service.ts, dto/. Provides GET /results/:surveyId,
-// /results/:surveyId/public, /leaderboard (and feeds /external/results). Uses @mhm/shared results.
-@Module({})
+// PrismaService is provided by the global PrismaModule registered in AppModule.
+@Module({
+  controllers: [ResultsController, LeaderboardController],
+  providers: [ResultsService],
+  exports: [ResultsService],
+})
 export class ResultsModule {}

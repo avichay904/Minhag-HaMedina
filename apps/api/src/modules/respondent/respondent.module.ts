@@ -1,7 +1,14 @@
 import { Module } from '@nestjs/common';
 
-// Owner: Worker F/G area (Respondent profile).
-// Add: respondent.controller.ts, respondent.service.ts, dto/. Provides GET/PATCH /respondent/profile.
-// Imports GamificationModule (rank/badges). Builds RespondentProfile DTO.
-@Module({})
+import { PrismaModule } from '../../common/prisma/prisma.module';
+import { GamificationModule } from '../gamification/gamification.module';
+
+import { RespondentController } from './respondent.controller';
+import { RespondentService } from './respondent.service';
+
+@Module({
+  imports: [PrismaModule, GamificationModule],
+  controllers: [RespondentController],
+  providers: [RespondentService],
+})
 export class RespondentModule {}

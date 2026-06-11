@@ -1,6 +1,12 @@
 import { Module } from '@nestjs/common';
 
-// Owner: Worker A (Auth & Identity).
-// Add: auth.controller.ts, auth.service.ts, dto/. Provides /auth/social, /auth/anonymous.
-@Module({})
+import { GamificationModule } from '../gamification/gamification.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+
+@Module({
+  imports: [GamificationModule],
+  controllers: [AuthController],
+  providers: [AuthService],
+})
 export class AuthModule {}

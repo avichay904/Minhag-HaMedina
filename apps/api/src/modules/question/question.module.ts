@@ -1,7 +1,16 @@
 import { Module } from '@nestjs/common';
 
-// Owner: Worker D (Question & Targeting).
-// Add: question.controller.ts, question.service.ts, dto/. Provides POST /questions (Admin).
-// Export QuestionService (servable-question assembly via @mhm/shared selection) for SurveyModule.
-@Module({})
+import { QUESTION_SERVICE } from '../../common/facades';
+
+import { QuestionController } from './question.controller';
+import { QuestionService } from './question.service';
+
+@Module({
+  controllers: [QuestionController],
+  providers: [
+    QuestionService,
+    { provide: QUESTION_SERVICE, useExisting: QuestionService },
+  ],
+  exports: [QUESTION_SERVICE],
+})
 export class QuestionModule {}

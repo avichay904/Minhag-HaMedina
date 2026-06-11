@@ -1,7 +1,22 @@
 import { Module } from '@nestjs/common';
 
-// Owner: Worker F (Gamification).
-// Add: challenge.service.ts, badge.service.ts, rank.service.ts. MUST export these services
-// (consumed by ResponseModule, RespondentModule, CycleModule, ResultsModule).
-@Module({})
+import { PrismaModule } from '../../common/prisma/prisma.module';
+import { GAMIFICATION_SERVICE } from '../../common/facades';
+
+import { RankService } from './rank.service';
+import { BadgeService } from './badge.service';
+import { ChallengeService } from './challenge.service';
+import { GamificationService } from './gamification.service';
+
+@Module({
+  imports: [PrismaModule],
+  providers: [
+    RankService,
+    BadgeService,
+    ChallengeService,
+    GamificationService,
+    { provide: GAMIFICATION_SERVICE, useExisting: GamificationService },
+  ],
+  exports: [GAMIFICATION_SERVICE],
+})
 export class GamificationModule {}
