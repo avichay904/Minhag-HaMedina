@@ -24,6 +24,8 @@ import { RespondentModule } from './modules/respondent/respondent.module';
 import { ResultsModule } from './modules/results/results.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
 import { AntifraudModule } from './modules/antifraud/antifraud.module';
+import { StatsModule } from './modules/stats/stats.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { AntifraudModule } from './modules/antifraud/antifraud.module';
     ResultsModule,
     GamificationModule,
     AntifraudModule,
+    StatsModule,
+    NotificationModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

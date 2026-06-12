@@ -8,3 +8,4 @@ export * from './dto/response.schema.js';
 export * from './dto/results.schema.js';
 export * from './dto/leaderboard.schema.js';
 export * from './dto/error.schema.js';
+export * from './dto/stats.schema.js';

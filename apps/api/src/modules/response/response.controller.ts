@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Ip,
   Post,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -34,8 +35,9 @@ export class ResponseController {
   submit(
     @Body() dto: SubmitResponseDto,
     @CurrentPrincipal() principal: Principal,
+    @Ip() ip: string,
   ): Promise<SubmitResponseResponse> {
-    return this.responseService.submit(dto, principal);
+    return this.responseService.submit(dto, principal, ip);
   }
 
   /** Skip a question without answering. */
@@ -46,8 +48,9 @@ export class ResponseController {
   skip(
     @Body() dto: SkipDto,
     @CurrentPrincipal() principal: Principal,
+    @Ip() ip: string,
   ): Promise<SubmitResponseResponse> {
-    return this.responseService.skip(dto, principal);
+    return this.responseService.skip(dto, principal, ip);
   }
 }
 

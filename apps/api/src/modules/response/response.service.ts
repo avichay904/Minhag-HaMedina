@@ -71,6 +71,7 @@ export class ResponseService {
   async submit(
     dto: SubmitResponseDto,
     principal: Principal,
+    ip?: string,
   ): Promise<SubmitResponseResponse> {
     const question = await this.loadActiveQuestion(dto.questionId);
 
@@ -80,6 +81,7 @@ export class ResponseService {
     const fraud = await this.antifraud.assess({
       respondentId: principal.respondentId,
       answerTimeMs: dto.answerTimeMs,
+      ip,
     });
 
     const answerValue = normaliseAnswerValue(dto.answerValue, question.type as QuestionType);
@@ -110,22 +112,28 @@ export class ResponseService {
       throw err;
     }
 
-    const gamResult = await this.gamification.onResponseRecorded({
-      respondentId: principal.respondentId ?? '',
-      questionId: dto.questionId,
-      category: question.category,
-      questionType: question.type as QuestionType,
-      cycleId,
-      skipped: false,
-      seen: true,
-      answerTimeMs: dto.answerTimeMs,
-    });
+    const [gamResult, percentileToday] = await Promise.all([
+      this.gamification.onResponseRecorded({
+        respondentId: principal.respondentId ?? '',
+        questionId: dto.questionId,
+        category: question.category,
+        questionType: question.type as QuestionType,
+        cycleId,
+        skipped: false,
+        seen: true,
+        answerTimeMs: dto.answerTimeMs,
+      }),
+      principal.respondentId
+        ? this.computePercentileToday(principal.respondentId)
+        : Promise.resolve(null),
+    ]);
 
     return {
       accepted: true,
       pointsEarned: gamResult.pointsEarned,
       newBadges: gamResult.newBadges,
       challengeProgress: gamResult.challengeProgress,
+      percentileToday,
     };
   }
 
@@ -136,11 +144,18 @@ export class ResponseService {
   async skip(
     dto: SkipDto,
     principal: Principal,
+    ip?: string,
   ): Promise<SubmitResponseResponse> {
     const question = await this.loadActiveQuestion(dto.questionId);
 
     const cycleInfo = await this.cycle.getActiveCycle(question.surveyId);
     const cycleId = cycleInfo?.id ?? '';
+
+    // Assess IP velocity for skips as well (no answerTimeMs for skips).
+    const skipFraud = await this.antifraud.assess({
+      respondentId: principal.respondentId,
+      ip,
+    });
 
     // Scale skips do NOT count as "seen" for the weekly challenge.
     const seen = question.type !== QuestionType.SCALE;
@@ -156,8 +171,8 @@ export class ResponseService {
           trustScoreAtSubmission: principal.trustScore,
           source: principal.xSource,
           rawCounted: false,
-          flagged: false,
-          flagReason: null,
+          flagged: skipFraud.flagged,
+          flagReason: skipFraud.reason ?? null,
           answerTimeMs: null,
         },
       });
@@ -214,6 +229,62 @@ export class ResponseService {
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  /**
+   * Compute the top-N percentile for the given respondent based on how many
+   * non-skipped responses they gave today vs all respondents who answered today.
+   *
+   * Returns a value 0–100 where lower = better (e.g. 5 means top 5%).
+   * Returns null if it cannot be computed.
+   */
+  private async computePercentileToday(respondentId: string): Promise<number | null> {
+    const todayMidnightUtc = new Date();
+    todayMidnightUtc.setUTCHours(0, 0, 0, 0);
+
+    // 1. Count how many answers this respondent gave today.
+    const myCount = await this.prisma.response.count({
+      where: {
+        respondentId,
+        skipped: false,
+        answeredAt: { gte: todayMidnightUtc },
+      },
+    });
+
+    if (myCount === 0) return null;
+
+    // 2. Count distinct respondents who gave strictly fewer answers today than myCount.
+    //    We use groupBy respondentId and filter for counts < myCount.
+    const lessActive = await this.prisma.response.groupBy({
+      by: ['respondentId'],
+      where: {
+        skipped: false,
+        answeredAt: { gte: todayMidnightUtc },
+        respondentId: { not: null },
+      },
+      having: {
+        respondentId: { _count: { lt: myCount } },
+      },
+      _count: { respondentId: true },
+    });
+
+    const totalRespondents = await this.prisma.response.findMany({
+      where: {
+        skipped: false,
+        answeredAt: { gte: todayMidnightUtc },
+        respondentId: { not: null },
+      },
+      select: { respondentId: true },
+      distinct: ['respondentId'],
+    });
+
+    const total = totalRespondents.length;
+    if (total <= 1) return 1; // only this respondent, top 1%
+
+    // percentileToday = fraction of respondents this one outperforms (top-N%)
+    const countBelow = lessActive.length;
+    const percentile = Math.ceil(((total - countBelow) / total) * 100);
+    return Math.max(1, Math.min(100, percentile));
+  }
 
   private async loadActiveQuestion(questionId: string) {
     const question = await this.prisma.question.findUnique({

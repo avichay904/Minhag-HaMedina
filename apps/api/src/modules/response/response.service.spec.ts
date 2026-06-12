@@ -88,6 +88,11 @@ function buildPrismaMock() {
     response: {
       create: vi.fn(),
       findMany: vi.fn(),
+      // Used by computePercentileToday — default to sensible values so existing
+      // tests remain unaffected (percentileToday will be a number or null but
+      // existing assertions don't check it).
+      count: vi.fn().mockResolvedValue(0),
+      groupBy: vi.fn().mockResolvedValue([]),
     },
   };
 }

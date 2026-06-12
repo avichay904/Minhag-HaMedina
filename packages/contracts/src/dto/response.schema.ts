@@ -30,6 +30,8 @@ export const submitResponseResponseSchema = z.object({
   pointsEarned: z.number(),
   newBadges: z.array(z.nativeEnum(BadgeType)),
   challengeProgress: challengeProgressDtoSchema.nullable(),
+  /** This respondent's top-N% rank by answers given today (e.g. 12 = top 12%). Null when unavailable. */
+  percentileToday: z.number().min(0).max(100).nullable().optional(),
 });
 export type SubmitResponseResponse = z.infer<typeof submitResponseResponseSchema>;
 

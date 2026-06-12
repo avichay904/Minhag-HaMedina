@@ -7,6 +7,11 @@ export interface AppConfig {
   google: { clientId: string };
   apple: { clientId: string };
   rateLimit: { ttlSec: number; max: number };
+  fcm: {
+    projectId: string | undefined;
+    serverKey: string | undefined;
+    serviceAccount: string | undefined;
+  };
 }
 
 export default (): AppConfig => ({
@@ -23,5 +28,10 @@ export default (): AppConfig => ({
   rateLimit: {
     ttlSec: parseInt(process.env.RATE_LIMIT_TTL_SEC ?? '60', 10),
     max: parseInt(process.env.RATE_LIMIT_MAX ?? '120', 10),
+  },
+  fcm: {
+    projectId: process.env.FCM_PROJECT_ID,
+    serverKey: process.env.FCM_SERVER_KEY,
+    serviceAccount: process.env.FCM_SERVICE_ACCOUNT,
   },
 });

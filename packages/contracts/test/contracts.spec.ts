@@ -8,8 +8,11 @@ import {
 } from '../src/index.js';
 
 describe('endpoints', () => {
-  it('exposes all 16 Phase-A routes', () => {
-    expect(Object.keys(ENDPOINTS)).toHaveLength(16);
+  it('exposes all 17 Phase-A routes', () => {
+    expect(Object.keys(ENDPOINTS)).toHaveLength(17);
+  });
+  it('includes the public community-stats route', () => {
+    expect(ENDPOINTS.communityStats).toEqual({ method: 'GET', path: '/stats/community' });
   });
   it('builds parameterised paths', () => {
     expect(buildPath(ENDPOINTS.surveyQuestions.path, { id: 'abc' })).toBe('/surveys/abc/questions');

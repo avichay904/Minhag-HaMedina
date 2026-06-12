@@ -41,6 +41,9 @@ export const ENDPOINTS = {
   publicResults: { method: 'GET', path: '/results/:surveyId/public' },
   externalResults: { method: 'GET', path: '/external/results' },
   leaderboard: { method: 'GET', path: '/leaderboard' },
+
+  // Stats
+  communityStats: { method: 'GET', path: '/stats/community' },
 } as const satisfies Record<string, EndpointDef>;
 
 export type EndpointName = keyof typeof ENDPOINTS;

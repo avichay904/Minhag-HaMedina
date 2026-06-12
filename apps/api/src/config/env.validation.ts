@@ -12,6 +12,10 @@ export const envSchema = z.object({
   APPLE_CLIENT_ID: z.string().optional().default(''),
   RATE_LIMIT_TTL_SEC: z.coerce.number().default(60),
   RATE_LIMIT_MAX: z.coerce.number().default(120),
+  // Push notification (FCM) — all optional; absence disables FCM sender.
+  FCM_PROJECT_ID: z.string().optional(),
+  FCM_SERVER_KEY: z.string().optional(),
+  FCM_SERVICE_ACCOUNT: z.string().optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>) {
