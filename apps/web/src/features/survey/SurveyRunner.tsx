@@ -67,6 +67,7 @@ export function SurveyRunner() {
   const [allNewBadges, setAllNewBadges] = useState<BadgeType[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [activeSurveyId, setActiveSurveyId] = useState<string | null>(null);
+  const [lastPercentileToday, setLastPercentileToday] = useState<number | null>(null);
 
   // Per-question state
   const [queueIndex, setQueueIndex] = useState(0);
@@ -97,6 +98,13 @@ export function SurveyRunner() {
     queryKey: ['answered'],
     queryFn: () => api.answered(),
     enabled: !!token,
+  });
+
+  // Fetch community stats (public endpoint — no auth needed)
+  const { data: communityStats } = useQuery({
+    queryKey: ['communityStats'],
+    queryFn: () => api.communityStats(),
+    staleTime: 60_000,
   });
 
   // Build queue when data is ready
@@ -138,6 +146,9 @@ export function SurveyRunner() {
     onSuccess: (data: SubmitResponseResponse) => {
       setAnsweredCount((c) => c + 1);
       setTotalPoints((p) => p + data.pointsEarned);
+      if (data.percentileToday != null) {
+        setLastPercentileToday(data.percentileToday);
+      }
       if (data.newBadges.length > 0) {
         setAllNewBadges((b) => [...b, ...data.newBadges]);
         data.newBadges.forEach((badge) => {
@@ -190,6 +201,7 @@ export function SurveyRunner() {
     setAnsweredCount(0);
     setTotalPoints(0);
     setAllNewBadges([]);
+    setLastPercentileToday(null);
     setQueueIndex(0);
     queryClient.invalidateQueries({ queryKey: ['activeSurveys'] });
     queryClient.invalidateQueries({ queryKey: ['questions'] });
@@ -229,6 +241,8 @@ export function SurveyRunner() {
               newBadges={allNewBadges}
               surveyId={activeSurveyId ?? undefined}
               onReset={handleReset}
+              answeredToday={communityStats?.answeredToday}
+              percentileToday={lastPercentileToday}
             />
           </Card>
         </div>
@@ -254,6 +268,8 @@ export function SurveyRunner() {
             newBadges={allNewBadges}
             surveyId={activeSurveyId ?? undefined}
             onReset={handleReset}
+            answeredToday={communityStats?.answeredToday}
+            percentileToday={lastPercentileToday}
           />
         </Card>
       </div>

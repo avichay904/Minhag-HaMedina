@@ -22,6 +22,7 @@ import {
   fetchSurveyQuestions,
   submitResponse,
   skipQuestion,
+  fetchCommunityStats,
 } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { QuestionType } from '@mhm/shared';
@@ -44,6 +45,7 @@ export function SurveyScreen(): React.ReactElement {
   const [totalPoints, setTotalPoints] = useState(0);
   const [allNewBadges, setAllNewBadges] = useState<BadgeType[]>([]);
   const [startTime, setStartTime] = useState<number>(Date.now());
+  const [percentileToday, setPercentileToday] = useState<number | null>(null);
 
   const surveysQuery = useQuery({
     queryKey: ['activeSurveys'],
@@ -57,6 +59,12 @@ export function SurveyScreen(): React.ReactElement {
     queryKey: ['questions', activeSurvey?.id],
     queryFn: () => fetchSurveyQuestions(activeSurvey!.id),
     enabled: !!activeSurvey,
+  });
+
+  const communityStatsQuery = useQuery({
+    queryKey: ['communityStats'],
+    queryFn: fetchCommunityStats,
+    enabled: surveyDone,
   });
 
   const questions: QuestionDto[] = questionsQuery.data ?? [];
@@ -74,6 +82,9 @@ export function SurveyScreen(): React.ReactElement {
         }
         return merged;
       });
+      if (result.percentileToday != null) {
+        setPercentileToday(result.percentileToday);
+      }
       advanceQuestion();
     },
     onError: () => {
@@ -117,6 +128,7 @@ export function SurveyScreen(): React.ReactElement {
     setQuestionIdx(0);
     setTotalPoints(0);
     setAllNewBadges([]);
+    setPercentileToday(null);
     setAnswerState({ type: 'idle' });
     setStartTime(Date.now());
     queryClient.invalidateQueries({ queryKey: ['activeSurveys'] });
@@ -165,6 +177,8 @@ export function SurveyScreen(): React.ReactElement {
 
   // ── Survey complete ────────────────────────────────────────────────────────
   if (surveyDone) {
+    const communityStats = communityStatsQuery.data;
+
     return (
       <Screen scrollable>
         <View style={styles.doneContainer}>
@@ -182,6 +196,18 @@ export function SurveyScreen(): React.ReactElement {
               <Text style={styles.statLabel}>{t('surveysCompleted')}</Text>
             </View>
           </View>
+
+          {communityStats != null && (
+            <View style={[styles.statCard, styles.communityCard]}>
+              <Text style={styles.communityNumber}>{communityStats.answeredToday}</Text>
+              <Text style={styles.statLabel}>{t('answeredToday')}</Text>
+              {percentileToday != null && (
+                <Text style={styles.percentileText}>
+                  {t('topPercentToday')} {percentileToday}{t('topPercentTodaySuffix')}
+                </Text>
+              )}
+            </View>
+          )}
 
           {allNewBadges.length > 0 && (
             <View style={styles.badgesSection}>
@@ -470,6 +496,22 @@ const styles = StyleSheet.create({
     color: colors.brandDeep,
   },
   statLabel: {
+    fontSize: typography.sizeSm,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
+  communityCard: {
+    width: '100%',
+    marginBottom: spacing.xl,
+    marginTop: 0,
+  },
+  communityNumber: {
+    fontSize: typography.sizeXxl,
+    fontWeight: typography.weightBold,
+    color: colors.brandMid,
+  },
+  percentileText: {
     fontSize: typography.sizeSm,
     color: colors.textSecondary,
     textAlign: 'center',

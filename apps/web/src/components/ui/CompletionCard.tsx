@@ -11,6 +11,8 @@ interface CompletionCardProps {
   newBadges: BadgeType[];
   surveyId?: string;
   onReset: () => void;
+  answeredToday?: number | null;
+  percentileToday?: number | null;
 }
 
 const confettiVariants = {
@@ -24,7 +26,7 @@ const confettiVariants = {
 
 const emojis = ['🎉', '⭐', '🌟', '✨', '🏆'];
 
-export function CompletionCard({ questionsAnswered, pointsEarned, newBadges, surveyId, onReset }: CompletionCardProps) {
+export function CompletionCard({ questionsAnswered, pointsEarned, newBadges, surveyId, onReset, answeredToday, percentileToday }: CompletionCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -99,8 +101,21 @@ export function CompletionCard({ questionsAnswered, pointsEarned, newBadges, sur
       )}
 
       <p className="text-sm text-brand-400">
-        {t('completion.community', { count: 1240 })}
+        {answeredToday != null
+          ? t('completion.community', { count: answeredToday })
+          : t('completion.community_loading')}
       </p>
+
+      {typeof percentileToday === 'number' && (
+        <motion.p
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="text-sm font-medium text-brand-500"
+        >
+          {t('completion.percentile', { pct: percentileToday })}
+        </motion.p>
+      )}
 
       <div className="flex flex-col gap-3 w-full mt-2">
         {surveyId && (

@@ -5,21 +5,90 @@ import { useAuth } from './useAuth';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
 
+// ─── Google Identity Services types (loaded dynamically) ────────────────────
+interface GisCredentialResponse {
+  credential: string;
+}
+
+interface GisInitConfig {
+  client_id: string;
+  callback: (response: GisCredentialResponse) => void;
+  auto_select?: boolean;
+}
+
+interface GisAccounts {
+  id: {
+    initialize: (config: GisInitConfig) => void;
+    prompt: () => void;
+  };
+}
+
+declare global {
+  interface Window {
+    google?: { accounts: GisAccounts };
+  }
+}
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+
+/** Injects the GIS script if not already present. Resolves once `window.google` is ready. */
+function loadGisScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.google?.accounts) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    if (existing) {
+      // Script already in DOM — wait for it
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error('GIS script failed to load')));
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('GIS script failed to load'));
+    document.head.appendChild(script);
+  });
+}
+
 export function WelcomeScreen() {
   const { t } = useTranslation();
   const { loginSocial, loginAnonymous } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState<'google' | 'apple' | 'guest' | null>(null);
 
+  async function handleGoogleReal(): Promise<void> {
+    await loadGisScript();
+    return new Promise((resolve, reject) => {
+      window.google!.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID!,
+        callback: (response: GisCredentialResponse) => {
+          loginSocial('GOOGLE', response.credential).then(resolve).catch(reject);
+        },
+        auto_select: false,
+      });
+      window.google!.accounts.id.prompt();
+    });
+  }
+
   async function handleSocial(provider: 'GOOGLE' | 'APPLE') {
     const key = provider === 'GOOGLE' ? 'google' : 'apple';
     setLoading(key);
     try {
-      // dev-mode token: "dev:<randomId>:<name>@dev.local"
-      const id = Math.random().toString(36).slice(2, 10);
-      const name = provider === 'GOOGLE' ? 'GoogleUser' : 'AppleUser';
-      const devToken = `dev:${id}:${name}@dev.local`;
-      await loginSocial(provider, devToken);
+      if (provider === 'GOOGLE' && GOOGLE_CLIENT_ID) {
+        // Real Google Identity Services sign-in
+        await handleGoogleReal();
+      } else {
+        // dev-mode token: "dev:<randomId>:<name>@dev.local"
+        const id = Math.random().toString(36).slice(2, 10);
+        const name = provider === 'GOOGLE' ? 'GoogleUser' : 'AppleUser';
+        const devToken = `dev:${id}:${name}@dev.local`;
+        await loginSocial(provider, devToken);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('errors.generic');
       showToast(msg, 'error');

@@ -69,6 +69,11 @@ export const strings = {
     PERSONAL_FINANCE: 'כלכלה אישית',
     GENERAL: 'כללי',
 
+    // Community stats
+    answeredToday: 'ענו היום',
+    topPercentToday: 'אתה בין',
+    topPercentTodaySuffix: '% שענו היום',
+
     // Errors
     errorGeneric: 'שגיאה. נסה שנית.',
     retry: 'נסה שנית',
@@ -138,6 +143,11 @@ export const strings = {
     TECHNOLOGY: 'Technology',
     PERSONAL_FINANCE: 'Personal Finance',
     GENERAL: 'General',
+
+    // Community stats
+    answeredToday: 'answered today',
+    topPercentToday: "You're in the top",
+    topPercentTodaySuffix: '% who answered today',
 
     // Errors
     errorGeneric: 'Error. Please try again.',

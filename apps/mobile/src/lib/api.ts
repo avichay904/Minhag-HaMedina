@@ -11,6 +11,7 @@ import type {
   LeaderboardEntry,
   ActiveSurveysResponse,
   QuestionsResponse,
+  CommunityStatsResponse,
 } from '@mhm/contracts';
 
 const TOKEN_KEY = 'mhm_jwt';
@@ -143,6 +144,13 @@ export async function fetchLeaderboard(): Promise<LeaderboardResponse> {
   return request<LeaderboardResponse>(ep.method, ep.path);
 }
 
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+export async function fetchCommunityStats(): Promise<CommunityStatsResponse> {
+  const ep = ENDPOINTS.communityStats;
+  return request<CommunityStatsResponse>(ep.method, ep.path, undefined, false);
+}
+
 // Re-export types we need in screens
 export type {
   QuestionDto,
@@ -150,4 +158,5 @@ export type {
   RespondentProfile,
   LeaderboardResponse,
   LeaderboardEntry,
+  CommunityStatsResponse,
 };

@@ -13,6 +13,7 @@ import type {
   UpdateProfileRequest,
   SurveyResults,
   LeaderboardResponse,
+  CommunityStatsResponse,
   ApiError,
 } from '@mhm/contracts';
 
@@ -144,6 +145,11 @@ export const api = {
   leaderboard(): Promise<LeaderboardResponse> {
     return request('GET', ENDPOINTS.leaderboard.path);
   },
+
+  // Stats (public — no auth required)
+  communityStats(): Promise<CommunityStatsResponse> {
+    return request('GET', ENDPOINTS.communityStats.path);
+  },
 };
 
-export type { AuthResponse, RespondentProfile };
+export type { AuthResponse, RespondentProfile, CommunityStatsResponse };
