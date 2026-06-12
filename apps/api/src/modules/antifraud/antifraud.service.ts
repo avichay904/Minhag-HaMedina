@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 
 import { type AntifraudInput, type AntifraudResult, type IAntifraudService } from '../../common/facades';
 
@@ -43,9 +43,11 @@ export class AntifraudService implements IAntifraudService {
   private readonly ipWindowMs: number;
   private readonly now: NowFn;
 
+  // @Optional() so NestJS DI passes `undefined` (no provider for these tokens)
+  // and the defaults apply; tests construct the service directly with overrides.
   constructor(
-    ipVelocityConfig?: Partial<IpVelocityConfig>,
-    now?: NowFn,
+    @Optional() ipVelocityConfig?: Partial<IpVelocityConfig>,
+    @Optional() now?: NowFn,
   ) {
     this.ipMaxPerWindow = ipVelocityConfig?.maxPerWindow ?? DEFAULT_IP_VELOCITY_MAX;
     this.ipWindowMs = ipVelocityConfig?.windowMs ?? DEFAULT_IP_VELOCITY_WINDOW_MS;
