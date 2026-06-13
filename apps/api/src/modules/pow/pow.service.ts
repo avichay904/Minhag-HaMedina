@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, createHash } from 'node:crypto';
+import { createHmac, createHash, timingSafeEqual as cryptoTimingSafeEqual } from 'node:crypto';
 import type { PowChallengeResponse } from '@mhm/contracts';
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -102,6 +102,5 @@ function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   const bufA = Buffer.from(a, 'utf8');
   const bufB = Buffer.from(b, 'utf8');
-  // Node's crypto.timingSafeEqual requires equal-length buffers
-  return require('node:crypto').timingSafeEqual(bufA, bufB);
+  return cryptoTimingSafeEqual(bufA, bufB);
 }

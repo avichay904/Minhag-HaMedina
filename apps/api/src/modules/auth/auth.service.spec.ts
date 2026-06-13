@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +8,7 @@ import { AuthProvider, Language, Rank } from '@mhm/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { IdentityService } from '../../common/identity/identity.service';
 import { GAMIFICATION_SERVICE, type IGamificationService } from '../../common/facades';
+import { PowService } from '../pow/pow.service';
 
 import { AuthService } from './auth.service';
 import type { SocialLoginDto } from './dto/auth.dto';
@@ -85,6 +87,22 @@ function buildGamificationMock(): IGamificationService {
   };
 }
 
+function buildConfigMock(powEnabled = false) {
+  return {
+    get: vi.fn((key: string) => {
+      if (key === 'pow.enabled') return powEnabled;
+      return undefined;
+    }),
+  };
+}
+
+function buildPowMock() {
+  return {
+    issue: vi.fn(),
+    verify: vi.fn(), // no-op by default; throw to simulate failure
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -94,6 +112,8 @@ async function buildModule(
   identityMock: ReturnType<typeof buildIdentityMock>,
   jwtMock: ReturnType<typeof buildJwtMock>,
   gamificationMock: IGamificationService,
+  configMock = buildConfigMock(),
+  powMock = buildPowMock(),
 ): Promise<AuthService> {
   const module: TestingModule = await Test.createTestingModule({
     providers: [
@@ -101,6 +121,8 @@ async function buildModule(
       { provide: PrismaService, useValue: prismaMock },
       { provide: IdentityService, useValue: identityMock },
       { provide: JwtService, useValue: jwtMock },
+      { provide: ConfigService, useValue: configMock },
+      { provide: PowService, useValue: powMock },
       { provide: GAMIFICATION_SERVICE, useValue: gamificationMock },
     ],
   }).compile();
@@ -347,5 +369,124 @@ describe('AuthService.anonymousLogin', () => {
     await service.anonymousLogin({} satisfies AnonymousLoginDto);
 
     expect(gamification.getProfileGamification).toHaveBeenCalledWith(ANON_RESPONDENT.id);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// anonymousLogin — PoW gating tests
+// ---------------------------------------------------------------------------
+
+describe('AuthService.anonymousLogin — PoW gating', () => {
+  const ANON_RESPONDENT = {
+    ...FAKE_RESPONDENT_BASE,
+    id: 'anon-pow-1',
+    authProvider: AuthProvider.ANONYMOUS,
+    externalId: null as unknown as string,
+    email: null,
+    trustScore: 0.4,
+    fingerprintHash: null,
+  };
+
+  it('proceeds without PoW fields when POW_ENABLED=false (default behaviour unchanged)', async () => {
+    const prisma = buildPrismaMock();
+    prisma.respondent.create.mockResolvedValue(ANON_RESPONDENT);
+
+    const powMock = buildPowMock();
+    const service = await buildModule(
+      prisma,
+      buildIdentityMock(),
+      buildJwtMock(),
+      buildGamificationMock(),
+      buildConfigMock(false),
+      powMock,
+    );
+
+    await service.anonymousLogin({});
+
+    // pow.verify must NOT be called when PoW is disabled
+    expect(powMock.verify).not.toHaveBeenCalled();
+    expect(prisma.respondent.create).toHaveBeenCalledOnce();
+  });
+
+  it('throws BadRequest when POW_ENABLED=true and no challenge/nonce supplied', async () => {
+    const prisma = buildPrismaMock();
+    const powMock = buildPowMock();
+    const service = await buildModule(
+      prisma,
+      buildIdentityMock(),
+      buildJwtMock(),
+      buildGamificationMock(),
+      buildConfigMock(true),
+      powMock,
+    );
+
+    await expect(service.anonymousLogin({})).rejects.toThrow(
+      'Proof-of-Work challenge and nonce are required when POW_ENABLED=true',
+    );
+
+    expect(powMock.verify).not.toHaveBeenCalled();
+    expect(prisma.respondent.create).not.toHaveBeenCalled();
+  });
+
+  it('throws BadRequest when POW_ENABLED=true and only challenge is supplied', async () => {
+    const prisma = buildPrismaMock();
+    const powMock = buildPowMock();
+    const service = await buildModule(
+      prisma,
+      buildIdentityMock(),
+      buildJwtMock(),
+      buildGamificationMock(),
+      buildConfigMock(true),
+      powMock,
+    );
+
+    await expect(
+      service.anonymousLogin({ powChallenge: 'abc.sig' }),
+    ).rejects.toThrow('Proof-of-Work challenge and nonce are required when POW_ENABLED=true');
+  });
+
+  it('calls pow.verify with challenge+nonce when POW_ENABLED=true and both fields present', async () => {
+    const prisma = buildPrismaMock();
+    prisma.respondent.create.mockResolvedValue(ANON_RESPONDENT);
+    const powMock = buildPowMock();
+
+    const service = await buildModule(
+      prisma,
+      buildIdentityMock(),
+      buildJwtMock(),
+      buildGamificationMock(),
+      buildConfigMock(true),
+      powMock,
+    );
+
+    await service.anonymousLogin({ powChallenge: 'challenge.sig', powNonce: 'nonce-val' });
+
+    expect(powMock.verify).toHaveBeenCalledOnce();
+    expect(powMock.verify).toHaveBeenCalledWith('challenge.sig', 'nonce-val');
+  });
+
+  it('propagates the exception thrown by pow.verify when nonce is invalid', async () => {
+    const { BadRequestException } = await import('@nestjs/common');
+
+    const prisma = buildPrismaMock();
+    const powMock = buildPowMock();
+    powMock.verify.mockImplementation(() => {
+      throw new BadRequestException('PoW nonce does not satisfy difficulty requirement');
+    });
+
+    const service = await buildModule(
+      prisma,
+      buildIdentityMock(),
+      buildJwtMock(),
+      buildGamificationMock(),
+      buildConfigMock(true),
+      powMock,
+    );
+
+    await expect(
+      service.anonymousLogin({ powChallenge: 'challenge.sig', powNonce: 'bad-nonce' }),
+    ).rejects.toThrow('PoW nonce does not satisfy difficulty requirement');
+
+    expect(prisma.respondent.create).not.toHaveBeenCalled();
   });
 });

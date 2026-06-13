@@ -8,8 +8,8 @@ import { PUSH_SENDER } from './push-sender.interface';
 /**
  * NotificationModule — env-gated push notification delivery.
  *
- * If FCM_PROJECT_ID is set, uses FcmPushSender; otherwise falls back to
- * LogPushSender (safe default for dev/test/CI).
+ * FCM HTTP v1 is used when BOTH FCM_PROJECT_ID and FCM_SERVICE_ACCOUNT are set.
+ * Otherwise the LogPushSender is used (safe default for dev/test/CI).
  */
 @Module({
   providers: [
@@ -24,7 +24,8 @@ import { PUSH_SENDER } from './push-sender.interface';
         fcmSender: FcmPushSender,
       ) => {
         const fcmProjectId = config.get<string>('fcm.projectId');
-        return fcmProjectId ? fcmSender : logSender;
+        const fcmServiceAccount = config.get<string>('fcm.serviceAccount');
+        return fcmProjectId && fcmServiceAccount ? fcmSender : logSender;
       },
     },
     NotificationService,

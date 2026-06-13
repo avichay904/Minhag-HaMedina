@@ -8,11 +8,14 @@ import {
 } from '../src/index.js';
 
 describe('endpoints', () => {
-  it('exposes all 17 Phase-A routes', () => {
-    expect(Object.keys(ENDPOINTS)).toHaveLength(17);
+  it('exposes all 18 Phase-A routes', () => {
+    expect(Object.keys(ENDPOINTS)).toHaveLength(18);
   });
   it('includes the public community-stats route', () => {
     expect(ENDPOINTS.communityStats).toEqual({ method: 'GET', path: '/stats/community' });
+  });
+  it('includes the public proof-of-work challenge route', () => {
+    expect(ENDPOINTS.powChallenge).toEqual({ method: 'GET', path: '/auth/pow-challenge' });
   });
   it('builds parameterised paths', () => {
     expect(buildPath(ENDPOINTS.surveyQuestions.path, { id: 'abc' })).toBe('/surveys/abc/questions');
