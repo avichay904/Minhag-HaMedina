@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { AuthProvider, Language, resolveTrustScore } from '@mhm/shared';
@@ -10,6 +11,7 @@ import { sha256 } from '../../common/crypto.util';
 import { buildRespondentProfile } from '../../common/profile.mapper';
 import { GAMIFICATION_SERVICE, IGamificationService } from '../../common/facades';
 import type { JwtPayload } from '../../common/types/jwt-payload';
+import { PowService } from '../pow/pow.service';
 
 import type { SocialLoginDto } from './dto/auth.dto';
 import type { AnonymousLoginDto } from './dto/auth.dto';
@@ -20,6 +22,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly identity: IdentityService,
     private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+    private readonly pow: PowService,
     @Inject(GAMIFICATION_SERVICE)
     private readonly gamification: IGamificationService,
   ) {}
@@ -55,6 +59,18 @@ export class AuthService {
   }
 
   async anonymousLogin(dto: AnonymousLoginDto): Promise<AuthResponse> {
+    const powEnabled = this.config.get<boolean>('pow.enabled') ?? false;
+
+    if (powEnabled) {
+      if (!dto.powChallenge || !dto.powNonce) {
+        throw new BadRequestException(
+          'Proof-of-Work challenge and nonce are required when POW_ENABLED=true',
+        );
+      }
+      // Throws BadRequestException on verification failure
+      this.pow.verify(dto.powChallenge, dto.powNonce);
+    }
+
     const trustScore = resolveTrustScore({ authProvider: AuthProvider.ANONYMOUS });
 
     const respondent = await this.findOrCreateAnonymous(
