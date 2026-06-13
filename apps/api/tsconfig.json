@@ -10,7 +10,7 @@
     "sourceMap": true,
     "declaration": false,
     "strictPropertyInitialization": false,
-    "types": ["node"]
+    "types": ["node", "multer"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "test"]

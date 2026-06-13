@@ -5,11 +5,15 @@ import {
   createQuestionRequestSchema,
   socialLoginRequestSchema,
   updateProfileRequestSchema,
+  uploadImageResponseSchema,
 } from '../src/index.js';
 
 describe('endpoints', () => {
-  it('exposes all 18 Phase-A routes', () => {
-    expect(Object.keys(ENDPOINTS)).toHaveLength(18);
+  it('exposes all 19 Phase-A routes', () => {
+    expect(Object.keys(ENDPOINTS)).toHaveLength(19);
+  });
+  it('includes the image-upload route', () => {
+    expect(ENDPOINTS.uploadImage).toEqual({ method: 'POST', path: '/uploads/image' });
   });
   it('includes the public community-stats route', () => {
     expect(ENDPOINTS.communityStats).toEqual({ method: 'GET', path: '/stats/community' });
@@ -40,5 +44,10 @@ describe('schemas', () => {
   it('rejects unknown profile fields (strict)', () => {
     expect(updateProfileRequestSchema.safeParse({ nickname: 'cool_kid' }).success).toBe(true);
     expect(updateProfileRequestSchema.safeParse({ hacker: true }).success).toBe(false);
+  });
+
+  it('uploadImageResponseSchema accepts a url string', () => {
+    expect(uploadImageResponseSchema.safeParse({ url: '/uploads/image.png' }).success).toBe(true);
+    expect(uploadImageResponseSchema.safeParse({}).success).toBe(false);
   });
 });

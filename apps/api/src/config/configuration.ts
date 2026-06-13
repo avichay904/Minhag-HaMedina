@@ -17,6 +17,8 @@ export interface AppConfig {
     difficulty: number;
     secret: string | undefined;
   };
+  cors: { origins: string[] };
+  uploads: { dir: string; publicBaseUrl: string };
 }
 
 export default (): AppConfig => ({
@@ -43,5 +45,14 @@ export default (): AppConfig => ({
     enabled: process.env.POW_ENABLED === 'true',
     difficulty: parseInt(process.env.POW_DIFFICULTY ?? '4', 10),
     secret: process.env.POW_SECRET,
+  },
+  cors: {
+    origins: process.env.CORS_ORIGINS
+      ? process.env.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)
+      : [],
+  },
+  uploads: {
+    dir: process.env.UPLOADS_DIR ?? './uploads',
+    publicBaseUrl: process.env.PUBLIC_BASE_URL ?? '',
   },
 });

@@ -26,6 +26,7 @@ import { GamificationModule } from './modules/gamification/gamification.module';
 import { AntifraudModule } from './modules/antifraud/antifraud.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     AntifraudModule,
     StatsModule,
     NotificationModule,
+    UploadModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

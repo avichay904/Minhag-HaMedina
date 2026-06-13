@@ -45,6 +45,9 @@ export const ENDPOINTS = {
 
   // Stats
   communityStats: { method: 'GET', path: '/stats/community' },
+
+  // Uploads
+  uploadImage: { method: 'POST', path: '/uploads/image' },
 } as const satisfies Record<string, EndpointDef>;
 
 export type EndpointName = keyof typeof ENDPOINTS;
