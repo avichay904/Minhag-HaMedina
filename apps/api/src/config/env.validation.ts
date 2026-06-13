@@ -16,6 +16,10 @@ export const envSchema = z.object({
   FCM_PROJECT_ID: z.string().optional(),
   FCM_SERVER_KEY: z.string().optional(),
   FCM_SERVICE_ACCOUNT: z.string().optional(),
+  // Proof-of-Work anti-bot — all optional; disabled by default.
+  POW_ENABLED: z.string().optional().default('false'),
+  POW_DIFFICULTY: z.coerce.number().int().min(1).max(8).optional().default(4),
+  POW_SECRET: z.string().optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>) {

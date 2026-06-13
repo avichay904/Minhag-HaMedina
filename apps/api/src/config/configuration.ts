@@ -12,6 +12,11 @@ export interface AppConfig {
     serverKey: string | undefined;
     serviceAccount: string | undefined;
   };
+  pow: {
+    enabled: boolean;
+    difficulty: number;
+    secret: string | undefined;
+  };
 }
 
 export default (): AppConfig => ({
@@ -33,5 +38,10 @@ export default (): AppConfig => ({
     projectId: process.env.FCM_PROJECT_ID,
     serverKey: process.env.FCM_SERVER_KEY,
     serviceAccount: process.env.FCM_SERVICE_ACCOUNT,
+  },
+  pow: {
+    enabled: process.env.POW_ENABLED === 'true',
+    difficulty: parseInt(process.env.POW_DIFFICULTY ?? '4', 10),
+    secret: process.env.POW_SECRET,
   },
 });

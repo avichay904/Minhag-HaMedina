@@ -11,11 +11,66 @@ services:
       - '5432:5432'
     volumes:
       - mhm_pgdata:/var/lib/postgresql/data
+    networks:
+      - mhm_net
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U mhm -d minhag_hamedina']
       interval: 5s
       timeout: 5s
       retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mhm-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://mhm:mhm@postgres:5432/minhag_hamedina
+      PORT: '3000'
+      # Secrets — override via .env file or shell environment in production
+      JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-me}
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-dev-admin-token}
+      # Set to 'live' in production and supply OAuth client IDs
+      IDENTITY_MODE: ${IDENTITY_MODE:-dev}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      # FCM push notifications (optional)
+      FCM_PROJECT_ID: ${FCM_PROJECT_ID:-}
+      FCM_SERVER_KEY: ${FCM_SERVER_KEY:-}
+      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
+    ports:
+      - '3000:3000'
+    networks:
+      - mhm_net
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/v1/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    container_name: mhm-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '8080:80'
+    networks:
+      - mhm_net
+
+networks:
+  mhm_net:
+    driver: bridge
 
 volumes:
   mhm_pgdata:

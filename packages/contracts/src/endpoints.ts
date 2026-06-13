@@ -19,6 +19,7 @@ export const ENDPOINTS = {
   // Auth
   socialLogin: { method: 'POST', path: '/auth/social' },
   anonymousLogin: { method: 'POST', path: '/auth/anonymous' },
+  powChallenge: { method: 'GET', path: '/auth/pow-challenge' },
   externalRegister: { method: 'POST', path: '/external/register' },
   externalRespondentUpdate: { method: 'PATCH', path: '/external/respondent/:id' },
 

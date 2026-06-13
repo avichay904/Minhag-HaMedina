@@ -14,6 +14,10 @@ export type SocialLoginRequest = z.infer<typeof socialLoginRequestSchema>;
 export const anonymousLoginRequestSchema = z.object({
   fingerprint: z.string().min(8).optional(),
   preferredLanguage: z.nativeEnum(Language).optional(),
+  /** Proof-of-Work challenge string issued by GET /auth/pow-challenge (optional unless POW_ENABLED=true). */
+  powChallenge: z.string().optional(),
+  /** Client nonce that satisfies the PoW difficulty requirement. */
+  powNonce: z.string().optional(),
 });
 export type AnonymousLoginRequest = z.infer<typeof anonymousLoginRequestSchema>;
 

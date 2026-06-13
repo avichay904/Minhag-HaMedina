@@ -1,6 +1,7 @@
 export * from './endpoints.js';
 export * from './dto/common.schema.js';
 export * from './dto/auth.schema.js';
+export * from './dto/pow.schema.js';
 export * from './dto/respondent.schema.js';
 export * from './dto/survey.schema.js';
 export * from './dto/question.schema.js';
