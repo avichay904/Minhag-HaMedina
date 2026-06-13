@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   SocialLoginRequest,
   AnonymousLoginRequest,
+  PowChallengeResponse,
   RespondentProfile,
   ActiveSurveysResponse,
   QuestionsResponse,
@@ -105,6 +106,9 @@ export const api = {
   },
   anonymousLogin(body: AnonymousLoginRequest = {}): Promise<AuthResponse> {
     return request('POST', ENDPOINTS.anonymousLogin.path, body);
+  },
+  powChallenge(): Promise<PowChallengeResponse> {
+    return request('GET', ENDPOINTS.powChallenge.path);
   },
 
   // Surveys

@@ -23,13 +23,60 @@ interface GisAccounts {
   };
 }
 
+// ─── Apple ID JS types (loaded dynamically) ──────────────────────────────────
+interface AppleIdAuthConfig {
+  clientId: string;
+  scope: string;
+  redirectURI: string;
+  usePopup: boolean;
+}
+
+interface AppleIdAuthorizationData {
+  id_token: string;
+}
+
+interface AppleIdSignInResponse {
+  authorization: AppleIdAuthorizationData;
+}
+
+interface AppleIdAuth {
+  init: (config: AppleIdAuthConfig) => void;
+  signIn: () => Promise<AppleIdSignInResponse>;
+}
+
 declare global {
   interface Window {
     google?: { accounts: GisAccounts };
+    AppleID?: { auth: AppleIdAuth };
   }
 }
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+const APPLE_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID as string | undefined;
+const APPLE_REDIRECT_URI = (import.meta.env.VITE_APPLE_REDIRECT_URI as string | undefined) ?? window.location.origin;
+
+/** Injects the Apple ID JS script if not already present. Resolves once `window.AppleID` is ready. */
+function loadAppleScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.AppleID?.auth) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector('script[src*="appleid.cdn-apple.com"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error('Apple ID script failed to load')));
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Apple ID script failed to load'));
+    document.head.appendChild(script);
+  });
+}
 
 /** Injects the GIS script if not already present. Resolves once `window.google` is ready. */
 function loadGisScript(): Promise<void> {
@@ -75,6 +122,18 @@ export function WelcomeScreen() {
     });
   }
 
+  async function handleAppleReal(): Promise<void> {
+    await loadAppleScript();
+    window.AppleID!.auth.init({
+      clientId: APPLE_CLIENT_ID!,
+      scope: 'name email',
+      redirectURI: APPLE_REDIRECT_URI,
+      usePopup: true,
+    });
+    const response = await window.AppleID!.auth.signIn();
+    await loginSocial('APPLE', response.authorization.id_token);
+  }
+
   async function handleSocial(provider: 'GOOGLE' | 'APPLE') {
     const key = provider === 'GOOGLE' ? 'google' : 'apple';
     setLoading(key);
@@ -82,6 +141,9 @@ export function WelcomeScreen() {
       if (provider === 'GOOGLE' && GOOGLE_CLIENT_ID) {
         // Real Google Identity Services sign-in
         await handleGoogleReal();
+      } else if (provider === 'APPLE' && APPLE_CLIENT_ID) {
+        // Real Apple ID sign-in
+        await handleAppleReal();
       } else {
         // dev-mode token: "dev:<randomId>:<name>@dev.local"
         const id = Math.random().toString(36).slice(2, 10);

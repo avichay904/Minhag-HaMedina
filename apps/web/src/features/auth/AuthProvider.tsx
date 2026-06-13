@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react';
 import { api, getToken, setToken, clearToken } from '../../lib/apiClient';
+import { solvePoW } from '../../lib/pow';
 import type { RespondentProfile } from '@mhm/contracts';
 
 export interface AuthContextValue {
@@ -58,7 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const loginAnonymous = useCallback(async () => {
-    const res = await api.anonymousLogin({});
+    // Best-effort PoW: fetch challenge, solve, attach to request.
+    // Any failure (network, solver cap) falls back to plain anonymous login.
+    let powFields: { powChallenge?: string; powNonce?: string } = {};
+    try {
+      const challengeResp = await api.powChallenge();
+      const nonce = await solvePoW(challengeResp.challenge, challengeResp.difficulty);
+      if (nonce !== null) {
+        powFields = { powChallenge: challengeResp.challenge, powNonce: nonce };
+      }
+    } catch {
+      // challenge fetch or solve failed — proceed without PoW
+    }
+    const res = await api.anonymousLogin(powFields);
     setToken(res.token);
     setTokenState(res.token);
     setProfile(res.respondent);
