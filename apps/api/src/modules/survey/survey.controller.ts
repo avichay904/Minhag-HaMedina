@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -9,8 +10,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { QuestionDto, SurveyDto } from '@mhm/contracts';
+import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { QuestionDto, SurveyDto, AdminSurveyDto, AdminCycleRow } from '@mhm/contracts';
 import type { Language, RespondentContext } from '@mhm/shared';
 import { AdminGuard } from '../../common/guards/admin.guard';
 import { Public } from '../../common/decorators/auth.decorators';
@@ -20,6 +21,7 @@ import { QUESTION_SERVICE, IQuestionService } from '../../common/facades';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { SurveyService } from './survey.service';
 import { CycleService } from '../cycle/cycle.service';
+import { CreateSurveyDto } from './dto/survey.dto';
 
 @ApiTags('surveys')
 @Controller('surveys')
@@ -85,6 +87,65 @@ export class SurveyController {
     const answeredQuestionIds = answeredRows.map((r) => r.questionId);
 
     return this.questionService.getServableQuestions({ surveyId, ctx, answeredQuestionIds });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Admin: create a survey
+  // ---------------------------------------------------------------------------
+
+  /**
+   * POST /surveys
+   * Creates a new survey (admin only).
+   * Note: NestJS matches more-specific static segments (/active) before params (:id).
+   * POST /surveys does not collide with GET /surveys/active or GET /surveys/:id/questions.
+   */
+  @Public()
+  @UseGuards(AdminGuard)
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a survey (admin)' })
+  @ApiCreatedResponse({ description: 'The created survey' })
+  createSurvey(@Body() dto: CreateSurveyDto): Promise<SurveyDto> {
+    return this.surveyService.createSurvey(dto);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Admin: list all surveys with cycles + question counts
+  // ---------------------------------------------------------------------------
+
+  /**
+   * GET /surveys
+   * Returns ALL surveys (active and inactive) with cycles and question counts (admin only).
+   * NestJS resolves /surveys/active first (static segment wins), so no collision.
+   */
+  @Public()
+  @UseGuards(AdminGuard)
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List all surveys with cycles and question counts (admin)' })
+  @ApiOkResponse({ description: 'Admin survey list' })
+  listSurveys(): Promise<AdminSurveyDto[]> {
+    return this.surveyService.listAllSurveys();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Admin: list cycles for a survey
+  // ---------------------------------------------------------------------------
+
+  /**
+   * GET /surveys/:id/cycles
+   * Returns all cycles for a given survey (admin only).
+   */
+  @Public()
+  @UseGuards(AdminGuard)
+  @Get(':id/cycles')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List cycles for a survey (admin)' })
+  @ApiOkResponse({ description: 'Cycle list for survey' })
+  async listCycles(@Param('id') surveyId: string): Promise<AdminCycleRow[]> {
+    const survey = await this.prisma.survey.findUnique({ where: { id: surveyId } });
+    if (!survey) throw new NotFoundException(`Survey ${surveyId} not found`);
+    return this.surveyService.listSurveyCycles(surveyId);
   }
 
   // ---------------------------------------------------------------------------

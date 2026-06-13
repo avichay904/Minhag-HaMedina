@@ -48,6 +48,19 @@ export const ENDPOINTS = {
 
   // Uploads
   uploadImage: { method: 'POST', path: '/uploads/image' },
+
+  // Admin — Survey management
+  adminCreateSurvey: { method: 'POST', path: '/surveys' },
+  adminListSurveys: { method: 'GET', path: '/surveys' },
+  adminListSurveyCycles: { method: 'GET', path: '/surveys/:id/cycles' },
+
+  // Admin — Question management
+  adminListQuestions: { method: 'GET', path: '/questions' },
+
+  // Admin — Source Registry
+  adminListSources: { method: 'GET', path: '/sources' },
+  adminCreateSource: { method: 'POST', path: '/sources' },
+  adminUpdateSource: { method: 'PATCH', path: '/sources/:id' },
 } as const satisfies Record<string, EndpointDef>;
 
 export type EndpointName = keyof typeof ENDPOINTS;

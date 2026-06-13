@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { SurveyDto, CycleSummary } from '@mhm/contracts';
+import type { Cadence } from '@mhm/shared';
+import type { SurveyDto, CycleSummary, AdminSurveyDto, AdminCycleRow, CreateSurveyRequest } from '@mhm/contracts';
 import type {
   ICycleService,
   IQuestionService,
@@ -52,6 +53,69 @@ export class SurveyService {
   }
 
   // ---------------------------------------------------------------------------
+  // Admin: create a survey
+  // ---------------------------------------------------------------------------
+
+  async createSurvey(dto: CreateSurveyRequest): Promise<SurveyDto> {
+    const survey = await this.prisma.survey.create({
+      data: {
+        titleHe: dto.titleHe,
+        titleEn: dto.titleEn,
+        cadence: (dto.cadence ?? 'WEEKLY') as Cadence,
+        active: true,
+      },
+    });
+
+    return {
+      id: survey.id,
+      titleHe: survey.titleHe,
+      titleEn: survey.titleEn,
+      cadence: survey.cadence as Cadence,
+      activeCycle: null,
+      questionCount: 0,
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Admin: list all surveys with cycles + question counts
+  // ---------------------------------------------------------------------------
+
+  async listAllSurveys(): Promise<AdminSurveyDto[]> {
+    const surveys = await this.prisma.survey.findMany({
+      include: {
+        cycles: {
+          orderBy: { sequence: 'asc' },
+        },
+        _count: { select: { questions: { where: { active: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return surveys.map((survey) => ({
+      id: survey.id,
+      titleHe: survey.titleHe,
+      titleEn: survey.titleEn,
+      cadence: survey.cadence as Cadence,
+      active: survey.active,
+      questionCount: survey._count.questions,
+      cycles: survey.cycles.map((c) => this.mapAdminCycleRow(c)),
+    }));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Admin: list cycles for a single survey
+  // ---------------------------------------------------------------------------
+
+  async listSurveyCycles(surveyId: string): Promise<AdminCycleRow[]> {
+    const cycles = await this.prisma.surveyCycle.findMany({
+      where: { surveyId },
+      orderBy: { sequence: 'asc' },
+    });
+
+    return cycles.map((c) => this.mapAdminCycleRow(c));
+  }
+
+  // ---------------------------------------------------------------------------
   // Mapping helpers
   // ---------------------------------------------------------------------------
 
@@ -62,6 +126,26 @@ export class SurveyService {
       openedAt: cycle.openedAt.toISOString(),
       closedAt: cycle.closedAt ? cycle.closedAt.toISOString() : null,
       publishedAt: cycle.publishedAt ? cycle.publishedAt.toISOString() : null,
+    };
+  }
+
+  private mapAdminCycleRow(c: {
+    id: string;
+    sequence: number;
+    state: string;
+    openedAt: Date;
+    closedAt: Date | null;
+    publishedAt: Date | null;
+    displayMode: string;
+  }): AdminCycleRow {
+    return {
+      id: c.id,
+      sequence: c.sequence,
+      state: c.state as AdminCycleRow['state'],
+      openedAt: c.openedAt.toISOString(),
+      closedAt: c.closedAt ? c.closedAt.toISOString() : null,
+      publishedAt: c.publishedAt ? c.publishedAt.toISOString() : null,
+      displayMode: c.displayMode as AdminCycleRow['displayMode'],
     };
   }
 }

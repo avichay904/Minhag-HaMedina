@@ -8,7 +8,7 @@ import {
   type ServableQuestion,
   type Targeting,
 } from '@mhm/shared';
-import type { ChoiceOptionDto, QuestionDto } from '@mhm/contracts';
+import type { ChoiceOptionDto, QuestionDto, AdminQuestionDto } from '@mhm/contracts';
 
 import { PrismaService } from '../../common/prisma/prisma.service';
 import type { IQuestionService } from '../../common/facades';
@@ -105,6 +105,18 @@ export class QuestionService implements IQuestionService {
     return this.toDto(created);
   }
 
+  /**
+   * Admin: list all questions (all fields), optionally filtered by surveyId.
+   */
+  async listAllQuestions(surveyId?: string): Promise<AdminQuestionDto[]> {
+    const rows = await this.prisma.question.findMany({
+      where: surveyId ? { surveyId } : undefined,
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return rows.map((q) => this.toAdminDto(q));
+  }
+
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
@@ -132,6 +144,42 @@ export class QuestionService implements IQuestionService {
       scaleMax: q.scaleMax,
       options: q.options as ChoiceOptionDto[] | null,
       imageUrl: q.imageUrl,
+    };
+  }
+
+  private toAdminDto(q: {
+    id: string;
+    surveyId: string;
+    category: string;
+    type: string;
+    textHe: string;
+    textEn: string;
+    scaleMin: number | null;
+    scaleMax: number | null;
+    options: unknown;
+    imageUrl: string | null;
+    targeting: unknown;
+    active: boolean;
+    expiresAfterCycles: number | null;
+    startCycleSequence: number;
+    createdAt: Date;
+  }): AdminQuestionDto {
+    return {
+      id: q.id,
+      surveyId: q.surveyId,
+      category: q.category as AdminQuestionDto['category'],
+      type: q.type as AdminQuestionDto['type'],
+      textHe: q.textHe,
+      textEn: q.textEn,
+      scaleMin: q.scaleMin,
+      scaleMax: q.scaleMax,
+      options: q.options as ChoiceOptionDto[] | null,
+      imageUrl: q.imageUrl,
+      targeting: (q.targeting ?? null) as AdminQuestionDto['targeting'],
+      active: q.active,
+      expiresAfterCycles: q.expiresAfterCycles,
+      startCycleSequence: q.startCycleSequence,
+      createdAt: q.createdAt.toISOString(),
     };
   }
 }

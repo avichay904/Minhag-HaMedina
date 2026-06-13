@@ -11,3 +11,4 @@ export * from './dto/leaderboard.schema.js';
 export * from './dto/error.schema.js';
 export * from './dto/stats.schema.js';
 export * from './dto/upload.schema.js';
+export * from './dto/source.schema.js';

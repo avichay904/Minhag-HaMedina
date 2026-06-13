@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { Category, QuestionType } from '@mhm/shared';
 import { choiceOptionSchema, targetingSchema } from './common.schema.js';
 
+
 /** Public-facing question (both languages sent; client localises). */
 export const questionDtoSchema = z.object({
   id: z.string(),
@@ -43,3 +44,36 @@ export const createQuestionRequestSchema = z
     path: ['options'],
   });
 export type CreateQuestionRequest = z.infer<typeof createQuestionRequestSchema>;
+
+// ---------------------------------------------------------------------------
+// Admin-only schemas
+// ---------------------------------------------------------------------------
+
+/** Full admin question row (all fields, including targeting and active). */
+export const adminQuestionDtoSchema = z.object({
+  id: z.string(),
+  surveyId: z.string(),
+  category: z.nativeEnum(Category),
+  type: z.nativeEnum(QuestionType),
+  textHe: z.string(),
+  textEn: z.string(),
+  scaleMin: z.number().int().nullable(),
+  scaleMax: z.number().int().nullable(),
+  options: z.array(choiceOptionSchema).nullable(),
+  imageUrl: z.string().nullable(),
+  targeting: targetingSchema.nullable(),
+  active: z.boolean(),
+  expiresAfterCycles: z.number().int().nullable(),
+  startCycleSequence: z.number().int(),
+  createdAt: z.string(),
+});
+export type AdminQuestionDto = z.infer<typeof adminQuestionDtoSchema>;
+
+export const adminQuestionsResponseSchema = z.array(adminQuestionDtoSchema);
+export type AdminQuestionsResponse = z.infer<typeof adminQuestionsResponseSchema>;
+
+/** Query params for GET /questions */
+export const listQuestionsQuerySchema = z.object({
+  surveyId: z.string().uuid().optional(),
+});
+export type ListQuestionsQuery = z.infer<typeof listQuestionsQuerySchema>;
