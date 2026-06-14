@@ -1,0 +1,262 @@
+// Minhag HaMedina — Phase A data model.
+// Single canonical schema (PostgreSQL). The `db:sqlite` script derives a SQLite
+// variant for fast tests. Arrays/structured fields are stored as Json so the
+// schema is valid on both providers; all targeting/results filtering happens in
+// application code (see @mhm/shared), never in Prisma Json `where` clauses.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------------------------------------------------------------- Enums
+
+enum AuthProvider {
+  GOOGLE
+  APPLE
+  EMAIL
+  FINGERPRINT
+  ANONYMOUS
+  EXTERNAL_AUTHORIZED
+  EXTERNAL_UNIDENTIFIED
+  EXTERNAL_AUTHENTICATED
+  EXTERNAL_UNKNOWN
+  IVR
+}
+
+enum QuestionType {
+  YES_NO
+  SCALE
+  SINGLE_CHOICE
+  TEXT_IMAGE
+}
+
+enum Category {
+  SOCIETY_POLITICS
+  CONSUMER
+  HEALTH_LIFESTYLE
+  TECHNOLOGY
+  PERSONAL_FINANCE
+  GENERAL
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Language {
+  HE
+  EN
+}
+
+enum BadgeType {
+  STREAK
+  FAST
+  DIVERSE
+  CHALLENGE
+  CHALLENGE_OF_WEEK
+  ALMOST
+}
+
+enum DisplayMode {
+  RAW
+  WEIGHTED
+  BOTH
+}
+
+enum CycleState {
+  OPEN
+  CLOSED
+  APPROVED
+  PUBLISHED
+}
+
+enum XSource {
+  WEB
+  APP
+  EXTERNAL
+}
+
+enum Cadence {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+// ---------------------------------------------------------------- Models
+
+model Admin {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String
+  passwordHash String?
+  createdAt    DateTime      @default(now())
+  approvedCycles SurveyCycle[]
+}
+
+model ExternalSource {
+  id               String       @id @default(uuid())
+  name             String
+  apiKeyHash       String       @unique
+  trustScoreMin    Float        @default(0.4)
+  trustScoreMax    Float        @default(1.0)
+  canRegisterUsers Boolean      @default(false)
+  canReadResults   Boolean      @default(false)
+  resultsScope     Json? // { ownRespondentsOnly: boolean, categories: Category[] }
+  active           Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  respondents      Respondent[]
+}
+
+model Respondent {
+  id                  String              @id @default(uuid())
+  authProvider        AuthProvider
+  externalId          String?
+  sourceId            String?
+  fingerprintHash     String?
+  email               String?
+  nickname            String?             @unique
+  nicknameChangedAt   DateTime?
+  trustScore          Float
+  showInLeaderboard   Boolean             @default(false)
+  preferredLanguage   Language            @default(HE)
+  preferredCategories Json? // Category[]
+  notificationToken   String?
+  // Demographics (flat columns; mapped to the demographics DTO object)
+  age                 Int?
+  gender              Gender?
+  region              String?
+  // Gamification denormalised counters
+  points              Int                 @default(0)
+  answeredCount       Int                 @default(0)
+  flagged             Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  source            ExternalSource?     @relation(fields: [sourceId], references: [id])
+  responses         Response[]
+  badges            RespondentBadge[]
+  challengeProgress ChallengeProgress[]
+
+  @@index([sourceId])
+  @@index([fingerprintHash])
+}
+
+model Survey {
+  id        String        @id @default(uuid())
+  titleHe   String
+  titleEn   String
+  cadence   Cadence       @default(WEEKLY)
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  questions Question[]
+  cycles    SurveyCycle[]
+}
+
+model Question {
+  id                 String       @id @default(uuid())
+  surveyId           String
+  category           Category
+  textHe             String
+  textEn             String
+  type               QuestionType
+  scaleMin           Int?
+  scaleMax           Int?
+  options            Json? // ChoiceOption[]  (single_choice)
+  imageUrl           String?
+  expiresAfterCycles Int? // null = always active
+  startCycleSequence Int          @default(1)
+  targeting          Json? // Targeting  (null = general / no targeting)
+  active             Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+
+  survey    Survey     @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  responses Response[]
+
+  @@index([surveyId, active])
+  @@index([category])
+}
+
+model Response {
+  id                     String     @id @default(uuid())
+  questionId             String
+  respondentId           String?
+  fingerprintHash        String?
+  answerValue            String? // null when skipped; numbers stored as strings
+  skipped                Boolean    @default(false)
+  seen                   Boolean    @default(true) // counts toward "seen" for the weekly challenge
+  trustScoreAtSubmission Float
+  source                 XSource
+  rawCounted             Boolean    @default(true)
+  flagged                Boolean    @default(false)
+  flagReason             String?
+  answerTimeMs           Int?
+  answeredAt             DateTime   @default(now())
+
+  question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  respondent Respondent? @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+
+  // "Never repeat": a respondent (or an anonymous fingerprint) answers a question at most once.
+  @@unique([questionId, respondentId])
+  @@unique([questionId, fingerprintHash])
+  @@index([questionId])
+  @@index([respondentId])
+}
+
+model SurveyCycle {
+  id           String          @id @default(uuid())
+  surveyId     String
+  sequence     Int             @default(1)
+  state        CycleState      @default(OPEN)
+  openedAt     DateTime        @default(now())
+  closedAt     DateTime?
+  publishedAt  DateTime?
+  approvedById String?
+  displayMode  DisplayMode     @default(BOTH)
+  createdAt    DateTime        @default(now())
+
+  survey          Survey           @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  approvedBy      Admin?           @relation(fields: [approvedById], references: [id])
+  weeklyChallenge WeeklyChallenge?
+
+  @@index([surveyId, state])
+}
+
+model WeeklyChallenge {
+  id          String              @id @default(uuid())
+  cycleId     String              @unique
+  targetCount Int
+  avgPerWeek  Float?
+  generatedAt DateTime            @default(now())
+  cycle       SurveyCycle         @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  progress    ChallengeProgress[]
+}
+
+model ChallengeProgress {
+  id            String          @id @default(uuid())
+  challengeId   String
+  respondentId  String
+  countAnswered Int             @default(0)
+  countSeen     Int             @default(0)
+  completed     Boolean         @default(false)
+  challenge     WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  respondent    Respondent      @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, respondentId])
+}
+
+model RespondentBadge {
+  id           String     @id @default(uuid())
+  respondentId String
+  type         BadgeType
+  awardedAt    DateTime   @default(now())
+  respondent   Respondent @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+
+  @@unique([respondentId, type])
+}

@@ -1,0 +1,138 @@
+{
+  "app": {
+    "name": "מנהג המדינה",
+    "tagline": "דעת הציבור — בזמן אמת"
+  },
+  "nav": {
+    "survey": "סקר",
+    "profile": "פרופיל",
+    "leaderboard": "טבלת מובילים",
+    "results": "תוצאות"
+  },
+  "auth": {
+    "welcome_title": "ברוכים הבאים",
+    "welcome_subtitle": "ענו על שאלות, עצבו את המדינה",
+    "continue_guest": "המשך כאורח",
+    "sign_google": "כניסה עם Google",
+    "sign_apple": "כניסה עם Apple",
+    "signing_in": "מתחבר...",
+    "or": "או",
+    "trust_note": "ניתוח משוקלל — משתמשים מאומתים משפיעים יותר"
+  },
+  "survey": {
+    "loading": "טוען שאלות...",
+    "no_surveys": "אין סקרים פעילים כרגע",
+    "no_surveys_sub": "חזור מאוחר יותר",
+    "skip": "דלג",
+    "question_of": "שאלה {{current}} מתוך {{total}}",
+    "answered_today": "{{count}} ענו היום",
+    "yes": "כן",
+    "no": "לא",
+    "submit": "שלח",
+    "submitting": "שולח..."
+  },
+  "completion": {
+    "title": "כל הכבוד!",
+    "subtitle": "ענית על {{count}} שאלות",
+    "community": "{{count}} אנשים ענו היום",
+    "community_loading": "— אנשים ענו היום",
+    "percentile": "אתה בין {{pct}}% שענו היום",
+    "points_earned": "+{{points}} נקודות",
+    "new_badge": "תג חדש: {{badge}}",
+    "back_to_surveys": "חזור לסקרים",
+    "view_results": "ראה תוצאות"
+  },
+  "profile": {
+    "title": "הפרופיל שלי",
+    "rank": "דרגה",
+    "points": "נקודות",
+    "surveys_completed": "סקרים שהושלמו",
+    "trust_score": "ציון אמינות",
+    "badges": "תגים",
+    "no_badges": "עדיין אין תגים — המשיכו לענות!",
+    "nickname": "שם משתמש",
+    "nickname_placeholder": "בחר שם משתמש...",
+    "nickname_rules": "3–20 תווים: אותיות, מספרים, קו תחתון",
+    "nickname_once_month": "ניתן לשנות פעם בחודש",
+    "nickname_taken": "שם המשתמש תפוס",
+    "show_leaderboard": "הצג אותי בטבלת מובילים",
+    "language": "שפה מועדפת",
+    "categories": "קטגוריות מועדפות",
+    "demographics": "פרטים דמוגרפיים",
+    "gender": "מגדר",
+    "birth_year": "שנת לידה",
+    "district": "מחוז",
+    "save": "שמור שינויים",
+    "saving": "שומר...",
+    "saved": "נשמר!",
+    "save_error": "שגיאה בשמירה",
+    "rank_progress": "{{surveys}} סקרים לדרגה הבאה",
+    "max_rank": "הגעת לדרגה המקסימלית!",
+    "trust_blocked": "נדרשת אימות לשדרוג",
+    "loading": "טוען פרופיל..."
+  },
+  "leaderboard": {
+    "title": "טבלת מובילים",
+    "position": "מיקום",
+    "name": "שם",
+    "rank": "דרגה",
+    "surveys": "סקרים",
+    "points": "נקודות",
+    "you": "אתה",
+    "loading": "טוען...",
+    "empty": "אין נתונים עדיין",
+    "top_note": "מציג את {{count}} המובילים"
+  },
+  "results": {
+    "title": "תוצאות סקר",
+    "select_survey": "בחר סקר",
+    "loading": "טוען תוצאות...",
+    "not_published": "התוצאות עדיין לא פורסמו",
+    "not_published_sub": "חזור לאחר שהמחזור יסגר ויאושר",
+    "total_respondents": "{{count}} משיבים",
+    "weighted": "משוקלל",
+    "raw": "גולמי",
+    "skip_rate": "{{pct}}% דילגו",
+    "yes_label": "כן",
+    "no_label": "לא",
+    "no_surveys": "אין סקרים זמינים"
+  },
+  "categories": {
+    "SOCIETY_POLITICS": "חברה ופוליטיקה",
+    "CONSUMER": "צרכנות",
+    "HEALTH_LIFESTYLE": "בריאות ואורח חיים",
+    "TECHNOLOGY": "טכנולוגיה",
+    "PERSONAL_FINANCE": "כלכלה אישית",
+    "GENERAL": "כללי"
+  },
+  "ranks": {
+    "GUEST": "אורח",
+    "BEGINNER": "מתחיל",
+    "CONTRIBUTOR": "תורם",
+    "VETERAN": "ותיק",
+    "AMBASSADOR": "שגריר"
+  },
+  "badges": {
+    "STREAK": "רצף שבועות",
+    "FAST": "מהיר",
+    "DIVERSE": "מגוון",
+    "CHALLENGE": "אתגר",
+    "CHALLENGE_OF_WEEK": "אתגר השבוע",
+    "ALMOST": "כמעט"
+  },
+  "gender": {
+    "MALE": "זכר",
+    "FEMALE": "נקבה",
+    "OTHER": "אחר"
+  },
+  "language": {
+    "HE": "עברית",
+    "EN": "English"
+  },
+  "errors": {
+    "generic": "אירעה שגיאה, נסה שנית",
+    "network": "בעיית חיבור — בדוק את האינטרנט שלך",
+    "unauthorized": "אנא התחבר מחדש",
+    "not_found": "לא נמצא"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "minhag-hamedina",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minhag HaMedina — public-opinion survey platform (Phase A)",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:libs": "pnpm --filter @mhm/shared --filter @mhm/contracts build",
+    "build": "pnpm -r build",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "dev": "pnpm build:libs && concurrently -n api,web -c blue,green \"pnpm --filter @mhm/api start:dev\" \"pnpm --filter @mhm/web dev\"",
+    "db:generate": "pnpm --filter @mhm/api db:generate",
+    "db:migrate": "pnpm --filter @mhm/api db:migrate",
+    "db:sqlite": "pnpm --filter @mhm/api db:sqlite",
+    "seed": "pnpm --filter @mhm/api seed",
+    "verify": "pnpm lint && pnpm build && pnpm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "prisma", "@prisma/client", "@prisma/engines", "@swc/core"]
+  }
+}

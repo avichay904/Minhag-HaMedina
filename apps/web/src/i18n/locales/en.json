@@ -1,0 +1,138 @@
+{
+  "app": {
+    "name": "Minhag HaMedina",
+    "tagline": "Public Opinion — Real Time"
+  },
+  "nav": {
+    "survey": "Survey",
+    "profile": "Profile",
+    "leaderboard": "Leaderboard",
+    "results": "Results"
+  },
+  "auth": {
+    "welcome_title": "Welcome",
+    "welcome_subtitle": "Answer questions, shape the country",
+    "continue_guest": "Continue as Guest",
+    "sign_google": "Sign in with Google",
+    "sign_apple": "Sign in with Apple",
+    "signing_in": "Signing in...",
+    "or": "or",
+    "trust_note": "Weighted analysis — verified users have more impact"
+  },
+  "survey": {
+    "loading": "Loading questions...",
+    "no_surveys": "No active surveys at the moment",
+    "no_surveys_sub": "Check back later",
+    "skip": "Skip",
+    "question_of": "Question {{current}} of {{total}}",
+    "answered_today": "{{count}} answered today",
+    "yes": "Yes",
+    "no": "No",
+    "submit": "Submit",
+    "submitting": "Submitting..."
+  },
+  "completion": {
+    "title": "Well done!",
+    "subtitle": "You answered {{count}} questions",
+    "community": "{{count}} people answered today",
+    "community_loading": "— people answered today",
+    "percentile": "You're in the top {{pct}}% who answered today",
+    "points_earned": "+{{points}} points",
+    "new_badge": "New badge: {{badge}}",
+    "back_to_surveys": "Back to Surveys",
+    "view_results": "View Results"
+  },
+  "profile": {
+    "title": "My Profile",
+    "rank": "Rank",
+    "points": "Points",
+    "surveys_completed": "Surveys Completed",
+    "trust_score": "Trust Score",
+    "badges": "Badges",
+    "no_badges": "No badges yet — keep answering!",
+    "nickname": "Username",
+    "nickname_placeholder": "Choose a username...",
+    "nickname_rules": "3–20 chars: letters, numbers, underscore",
+    "nickname_once_month": "Can be changed once per month",
+    "nickname_taken": "Username already taken",
+    "show_leaderboard": "Show me on the leaderboard",
+    "language": "Preferred Language",
+    "categories": "Preferred Categories",
+    "demographics": "Demographics",
+    "gender": "Gender",
+    "birth_year": "Birth Year",
+    "district": "District",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saved": "Saved!",
+    "save_error": "Error saving",
+    "rank_progress": "{{surveys}} surveys to next rank",
+    "max_rank": "You've reached the highest rank!",
+    "trust_blocked": "Verification required to upgrade",
+    "loading": "Loading profile..."
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "position": "#",
+    "name": "Name",
+    "rank": "Rank",
+    "surveys": "Surveys",
+    "points": "Points",
+    "you": "You",
+    "loading": "Loading...",
+    "empty": "No data yet",
+    "top_note": "Showing top {{count}} respondents"
+  },
+  "results": {
+    "title": "Survey Results",
+    "select_survey": "Select a Survey",
+    "loading": "Loading results...",
+    "not_published": "Results not yet published",
+    "not_published_sub": "Check back after the cycle closes and is approved",
+    "total_respondents": "{{count}} respondents",
+    "weighted": "Weighted",
+    "raw": "Raw",
+    "skip_rate": "{{pct}}% skipped",
+    "yes_label": "Yes",
+    "no_label": "No",
+    "no_surveys": "No surveys available"
+  },
+  "categories": {
+    "SOCIETY_POLITICS": "Society & Politics",
+    "CONSUMER": "Consumer",
+    "HEALTH_LIFESTYLE": "Health & Lifestyle",
+    "TECHNOLOGY": "Technology",
+    "PERSONAL_FINANCE": "Personal Finance",
+    "GENERAL": "General"
+  },
+  "ranks": {
+    "GUEST": "Guest",
+    "BEGINNER": "Beginner",
+    "CONTRIBUTOR": "Contributor",
+    "VETERAN": "Veteran",
+    "AMBASSADOR": "Ambassador"
+  },
+  "badges": {
+    "STREAK": "Streak",
+    "FAST": "Fast",
+    "DIVERSE": "Diverse",
+    "CHALLENGE": "Challenge",
+    "CHALLENGE_OF_WEEK": "Challenge of the Week",
+    "ALMOST": "Almost"
+  },
+  "gender": {
+    "MALE": "Male",
+    "FEMALE": "Female",
+    "OTHER": "Other"
+  },
+  "language": {
+    "HE": "Hebrew",
+    "EN": "English"
+  },
+  "errors": {
+    "generic": "An error occurred, please try again",
+    "network": "Connection issue — check your internet",
+    "unauthorized": "Please sign in again",
+    "not_found": "Not found"
+  }
+}
