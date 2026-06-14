@@ -50,7 +50,7 @@ services:
       test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/v1/health || exit 1']
       interval: 10s
       timeout: 5s
-      retries: 6
+      retries: 10
       start_period: 30s
 
   web:
@@ -62,9 +62,26 @@ services:
     container_name: mhm-web
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - '8080:80'
+    networks:
+      - mhm_net
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    container_name: mhm-admin
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '8081:80'
     networks:
       - mhm_net
 

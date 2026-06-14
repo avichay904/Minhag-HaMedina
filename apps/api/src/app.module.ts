@@ -27,6 +27,7 @@ import { AntifraudModule } from './modules/antifraud/antifraud.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { UploadModule } from './modules/upload/upload.module';
     StatsModule,
     NotificationModule,
     UploadModule,
+    HealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },
