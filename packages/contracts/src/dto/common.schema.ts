@@ -8,14 +8,19 @@ export const demographicsSchema = z.object({
 });
 export type DemographicsDto = z.infer<typeof demographicsSchema>;
 
-export const targetingSchema = z.object({
-  ageMin: z.number().int().min(0).max(120).nullish(),
-  ageMax: z.number().int().min(0).max(120).nullish(),
-  gender: z.nativeEnum(TargetGender).optional(),
-  regions: z.array(z.string()).nullish(),
-  language: z.nativeEnum(TargetLanguage).optional(),
-  minTrustScore: z.number().min(0).max(1).optional(),
-});
+export const targetingSchema = z
+  .object({
+    ageMin: z.number().int().min(0).max(120).nullish(),
+    ageMax: z.number().int().min(0).max(120).nullish(),
+    gender: z.nativeEnum(TargetGender).optional(),
+    regions: z.array(z.string()).nullish(),
+    language: z.nativeEnum(TargetLanguage).optional(),
+    minTrustScore: z.number().min(0).max(1).optional(),
+  })
+  .refine((t) => t.ageMin == null || t.ageMax == null || t.ageMin <= t.ageMax, {
+    message: 'ageMin must be ≤ ageMax',
+    path: ['ageMax'],
+  });
 export type TargetingDto = z.infer<typeof targetingSchema>;
 
 export const choiceOptionSchema = z.object({

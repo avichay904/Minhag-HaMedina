@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CycleState } from '@mhm/shared';
 import type { CycleInfo, ICycleService, IGamificationService } from '../../common/facades';
 import { GAMIFICATION_SERVICE } from '../../common/facades';
@@ -49,6 +49,9 @@ export class CycleService implements ICycleService {
   async closeCycle(cycleId: string): Promise<CycleInfo> {
     const cycle = await this.prisma.surveyCycle.findUnique({ where: { id: cycleId } });
     if (!cycle) throw new NotFoundException(`Cycle ${cycleId} not found`);
+    if (cycle.state !== CycleState.OPEN) {
+      throw new BadRequestException(`Only an OPEN cycle can be closed (current: ${cycle.state})`);
+    }
 
     const updated = await this.prisma.surveyCycle.update({
       where: { id: cycleId },
@@ -96,6 +99,9 @@ export class CycleService implements ICycleService {
   async approveCycle(cycleId: string, adminId?: string): Promise<CycleInfo> {
     const cycle = await this.prisma.surveyCycle.findUnique({ where: { id: cycleId } });
     if (!cycle) throw new NotFoundException(`Cycle ${cycleId} not found`);
+    if (cycle.state !== CycleState.CLOSED) {
+      throw new BadRequestException(`Only a CLOSED cycle can be approved (current: ${cycle.state})`);
+    }
 
     const updated = await this.prisma.surveyCycle.update({
       where: { id: cycleId },
@@ -115,6 +121,9 @@ export class CycleService implements ICycleService {
   async publishCycle(cycleId: string): Promise<CycleInfo> {
     const cycle = await this.prisma.surveyCycle.findUnique({ where: { id: cycleId } });
     if (!cycle) throw new NotFoundException(`Cycle ${cycleId} not found`);
+    if (cycle.state !== CycleState.APPROVED) {
+      throw new BadRequestException(`Only an APPROVED cycle can be published (current: ${cycle.state})`);
+    }
 
     const updated = await this.prisma.surveyCycle.update({
       where: { id: cycleId },

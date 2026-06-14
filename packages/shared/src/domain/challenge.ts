@@ -33,7 +33,10 @@ export function computeChallengeTarget(input: ChallengeTargetInput): number {
   const withBonus = Math.round(base * multiplier);
   const ceiling = Math.floor(CHALLENGE_PARAMS.ceilingRatio * N);
 
-  return Math.max(0, Math.min(withBonus, ceiling, N));
+  // N > 0 here (early-return above). Guarantee a meaningful target of at least 1
+  // so a tiny week (e.g. N=1, where 80% ceiling floors to 0) never disables the
+  // weekly challenge / gamification entirely.
+  return Math.max(1, Math.min(withBonus, ceiling, N));
 }
 
 export interface ChallengeReward {

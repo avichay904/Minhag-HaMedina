@@ -9,6 +9,8 @@ const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 export class PowService {
   private readonly secret: string;
   private readonly difficulty: number;
+  /** Consumed challenges (challenge string → expiry ms) for single-use replay protection. */
+  private readonly consumed = new Map<string, number>();
 
   constructor(private readonly config: ConfigService) {
     // Derive secret from POW_SECRET; fall back to JWT secret so nothing is
@@ -81,6 +83,22 @@ export class PowService {
     const required = '0'.repeat(this.difficulty);
     if (!workHash.startsWith(required)) {
       throw new BadRequestException('PoW nonce does not satisfy difficulty requirement');
+    }
+
+    // 4. Replay protection — a solved challenge may be consumed only once. Without
+    //    this a single solve could be reused for the whole TTL to mint accounts.
+    this.pruneConsumed();
+    if (this.consumed.has(challenge)) {
+      throw new BadRequestException('PoW challenge already used');
+    }
+    this.consumed.set(challenge, ts + CHALLENGE_TTL_MS);
+  }
+
+  /** Drop consumed challenges whose TTL has elapsed to bound memory. */
+  private pruneConsumed(): void {
+    const now = Date.now();
+    for (const [key, expiry] of this.consumed) {
+      if (expiry <= now) this.consumed.delete(key);
     }
   }
 
