@@ -363,7 +363,7 @@ export function SourcesPage() {
         onClose={() => setShowCreate(false)}
         onCreated={handleCreated}
       />
-      <EditSourceModal source={editSource} onClose={() => setEditSource(null)} />
+      <EditSourceModal key={editSource?.id} source={editSource} onClose={() => setEditSource(null)} />
     </div>
   );
 }

@@ -160,6 +160,7 @@ function SurveyDetailModal({ survey, onClose }: SurveyDetailModalProps) {
           <Button
             onClick={() => runAction('open', () => adminApi.openCycle(survey.id))}
             loading={loadingAction === 'open'}
+            disabled={!!loadingAction || !!(cycles ?? []).some((c) => c.state === CycleState.OPEN)}
             size="sm"
           >
             פתח מחזור חדש
@@ -207,6 +208,7 @@ function SurveyDetailModal({ survey, onClose }: SurveyDetailModalProps) {
                             size="sm"
                             variant={action.variant ?? 'primary'}
                             loading={loadingAction === action.label}
+                            disabled={!!loadingAction}
                             onClick={() => runAction(action.label, action.fn)}
                           >
                             {action.label}
