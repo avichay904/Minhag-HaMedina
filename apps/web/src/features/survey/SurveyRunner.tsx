@@ -147,8 +147,9 @@ export function SurveyRunner() {
         answerTimeMs: vars.answerTimeMs,
       }),
     onSuccess: (data: SubmitResponseResponse) => {
-      // Keep the answered set fresh after each submission without relying on focus-refetch
-      queryClient.invalidateQueries({ queryKey: ['answered'] });
+      // NOTE: do NOT invalidate ['answered'] here — it would refetch and trigger the
+      // queue-rebuild effect, resetting queueIndex mid-session. advance() refreshes it
+      // at completion, and handleReset refreshes it on restart.
       setAnsweredCount((c) => c + 1);
       setTotalPoints((p) => p + data.pointsEarned);
       if (data.percentileToday != null) {

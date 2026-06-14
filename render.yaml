@@ -68,13 +68,12 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          name: mhm-api
-          type: web
-          property: host
-          # Render exposes the service URL; prefix with https://
-          # If auto-wiring doesn't apply the https scheme, set it manually:
-          # value: https://<your-api-service>.onrender.com
+        # Set this AFTER the API's first deploy to its PUBLIC url INCLUDING the
+        # https:// scheme and the /api/v1 prefix, e.g.
+        #   https://mhm-api.onrender.com/api/v1
+        # (fromService 'host' yields only a bare internal hostname with no scheme
+        # or path, which the browser cannot call — so it is set manually here.)
+        sync: false
 
   # ── Admin (React SPA — static site) ───────────────────────────────────────
   - type: web
@@ -101,10 +100,9 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          name: mhm-api
-          type: web
-          property: host
-          # Render exposes the service URL; prefix with https://
-          # If auto-wiring doesn't apply the https scheme, set it manually:
-          # value: https://<your-api-service>.onrender.com
+        # Set this AFTER the API's first deploy to its PUBLIC url INCLUDING the
+        # https:// scheme and the /api/v1 prefix, e.g.
+        #   https://mhm-api.onrender.com/api/v1
+        # (fromService 'host' yields only a bare internal hostname with no scheme
+        # or path, which the browser cannot call — so it is set manually here.)
+        sync: false

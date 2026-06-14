@@ -2,6 +2,7 @@ import { ENDPOINTS, buildPath } from '@mhm/contracts';
 import { dispatchAuthLogout } from './authBus';
 import type {
   AdminSurveyDto,
+  SurveyDto,
   AdminCycleRow,
   AdminQuestionDto,
   CreateQuestionRequest,
@@ -134,7 +135,7 @@ export const adminApi = {
   listSurveys(): Promise<AdminSurveyDto[]> {
     return request('GET', ENDPOINTS.adminListSurveys.path);
   },
-  createSurvey(body: CreateSurveyRequest): Promise<AdminSurveyDto> {
+  createSurvey(body: CreateSurveyRequest): Promise<SurveyDto> {
     return request('POST', ENDPOINTS.adminCreateSurvey.path, body);
   },
   listSurveyCycles(surveyId: string): Promise<AdminCycleRow[]> {

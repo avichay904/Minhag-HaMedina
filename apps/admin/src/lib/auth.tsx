@@ -41,10 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     validatedRef.current = true;
+    // Safety timeout: never leave the app stuck on a blank screen if the
+    // validation request hangs (no response). Resolve the gate after 8s.
+    const timeout = setTimeout(() => setIsValidating(false), 8000);
     adminApi.validateToken().catch(() => {
       clearAdminToken();
       setToken(null);
     }).finally(() => {
+      clearTimeout(timeout);
       setIsValidating(false);
     });
   }, []);

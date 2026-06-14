@@ -19,7 +19,7 @@ COPY packages/contracts/package.json packages/contracts/
 COPY apps/api/package.json           apps/api/
 
 # ── Install all dependencies (with lockfile; fall back gracefully) ─────────────
-RUN pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # ── Copy source ───────────────────────────────────────────────────────────────
 COPY packages/shared/    packages/shared/
@@ -54,7 +54,7 @@ COPY packages/contracts/package.json packages/contracts/
 COPY apps/api/package.json           apps/api/
 
 # ── Install production dependencies only ──────────────────────────────────────
-RUN pnpm install --frozen-lockfile --prod || pnpm install --no-frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile --prod
 
 # ── Copy compiled output from builder ─────────────────────────────────────────
 COPY --from=builder /app/apps/api/dist                    apps/api/dist/

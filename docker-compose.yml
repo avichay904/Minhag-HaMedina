@@ -31,6 +31,8 @@ services:
     environment:
       DATABASE_URL: postgresql://mhm:mhm@postgres:5432/minhag_hamedina
       PORT: '3000'
+      # production gating (rejects the weak default JWT secret) keys off NODE_ENV
+      NODE_ENV: ${NODE_ENV:-development}
       # Secrets — override via .env file or shell environment in production
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-me}
       ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-dev-admin-token}
@@ -58,7 +60,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api/v1}
     container_name: mhm-web
     restart: unless-stopped
     depends_on:
@@ -74,7 +76,7 @@ services:
       context: .
       dockerfile: apps/admin/Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api/v1}
     container_name: mhm-admin
     restart: unless-stopped
     depends_on:

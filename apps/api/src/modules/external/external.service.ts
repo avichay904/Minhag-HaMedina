@@ -154,10 +154,12 @@ export class ExternalService {
       // Fetch responses for these questions, scoped to source's respondents.
       const questionIds = questions.map((q) => q.id);
 
+      // Scope to the source's own respondents ONLY when results_scope says so;
+      // a source with ownRespondentsOnly=false is permitted cross-respondent results.
       const responses = await this.prisma.response.findMany({
         where: {
           questionId: { in: questionIds },
-          respondentId: { in: ownRespondentIds },
+          ...(resultsScope.ownRespondentsOnly ? { respondentId: { in: ownRespondentIds } } : {}),
         },
       });
 

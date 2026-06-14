@@ -674,7 +674,7 @@ export function QuestionsPage() {
       </Card>
 
       <CreateQuestionModal
-        key={selectedSurveyId}
+        key={showCreate ? 'create-open' : selectedSurveyId}
         open={showCreate}
         onClose={() => setShowCreate(false)}
         surveys={surveyOptions}

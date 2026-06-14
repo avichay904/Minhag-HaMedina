@@ -21,7 +21,7 @@ COPY packages/contracts/package.json packages/contracts/
 COPY apps/web/package.json           apps/web/
 
 # ── Install all dependencies ──────────────────────────────────────────────────
-RUN pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # ── Copy source ───────────────────────────────────────────────────────────────
 COPY packages/shared/    packages/shared/
