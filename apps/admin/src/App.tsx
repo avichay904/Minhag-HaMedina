@@ -18,7 +18,10 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isValidating } = useAuth();
+  if (isValidating) {
+    return null;
+  }
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -37,7 +40,10 @@ function ProtectedRoutes() {
 }
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isValidating } = useAuth();
+  if (isValidating) {
+    return null;
+  }
   return (
     <Routes>
       <Route

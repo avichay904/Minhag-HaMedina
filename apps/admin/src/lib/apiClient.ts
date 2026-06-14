@@ -1,4 +1,5 @@
 import { ENDPOINTS, buildPath } from '@mhm/contracts';
+import { dispatchAuthLogout } from './authBus';
 import type {
   AdminSurveyDto,
   AdminCycleRow,
@@ -74,6 +75,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     const msg = Array.isArray(errorBody.message)
       ? errorBody.message.join(', ')
       : errorBody.message;
+    // Mid-session auth failures: clear token and redirect to login.
+    if (res.status === 401 || res.status === 403) {
+      clearAdminToken();
+      dispatchAuthLogout();
+    }
     throw new ApiRequestError(res.status, msg, errorBody);
   }
 

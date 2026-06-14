@@ -132,6 +132,7 @@ export function SurveyScreen(): React.ReactElement {
     setAnswerState({ type: 'idle' });
     setStartTime(Date.now());
     queryClient.invalidateQueries({ queryKey: ['activeSurveys'] });
+    queryClient.invalidateQueries({ queryKey: ['questions'] });
   };
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -193,7 +194,7 @@ export function SurveyScreen(): React.ReactElement {
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>{questions.length}</Text>
-              <Text style={styles.statLabel}>{t('surveysCompleted')}</Text>
+              <Text style={styles.statLabel}>{t('questionsAnswered')}</Text>
             </View>
           </View>
 
@@ -303,6 +304,7 @@ export function SurveyScreen(): React.ReactElement {
 
           {currentQuestion.type === QuestionType.SCALE && (
             <ScaleDots
+              key={currentQuestion.id}
               min={scaleMin}
               max={scaleMax}
               onSelect={(v) => handleAnswer(v)}
@@ -315,6 +317,7 @@ export function SurveyScreen(): React.ReactElement {
             currentQuestion.options.length > 0 && (
               <View>
                 <ChoiceList
+                  key={currentQuestion.id}
                   options={currentQuestion.options}
                   lang={lang}
                   onSelect={(key) => handleAnswer(key)}

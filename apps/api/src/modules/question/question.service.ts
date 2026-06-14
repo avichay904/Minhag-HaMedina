@@ -84,6 +84,16 @@ export class QuestionService implements IQuestionService {
       }
     }
 
+    // A question created mid-survey must start its expiry clock at the CURRENT
+    // cycle, not cycle 1 — otherwise `expiresAfterCycles` would expire it
+    // prematurely (e.g. created in cycle 3 with expiresAfterCycles=2 would have
+    // expired at cycle 3 instead of cycle 5).
+    const cycleAgg = await this.prisma.surveyCycle.aggregate({
+      where: { surveyId: dto.surveyId },
+      _max: { sequence: true },
+    });
+    const startCycleSequence = cycleAgg._max.sequence ?? 1;
+
     const created = await this.prisma.question.create({
       data: {
         surveyId: dto.surveyId,
@@ -97,7 +107,7 @@ export class QuestionService implements IQuestionService {
         imageUrl: dto.imageUrl ?? null,
         expiresAfterCycles: dto.expiresAfterCycles ?? null,
         targeting: dto.targeting ?? {},
-        startCycleSequence: 1,
+        startCycleSequence,
         active: true,
       },
     });

@@ -64,6 +64,11 @@ function loadAppleScript(): Promise<void> {
     }
     const existing = document.querySelector('script[src*="appleid.cdn-apple.com"]');
     if (existing) {
+      // Script tag is in the DOM — if it already finished loading the global is present
+      if (window.AppleID?.auth) {
+        resolve();
+        return;
+      }
       existing.addEventListener('load', () => resolve());
       existing.addEventListener('error', () => reject(new Error('Apple ID script failed to load')));
       return;
@@ -87,7 +92,11 @@ function loadGisScript(): Promise<void> {
     }
     const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
     if (existing) {
-      // Script already in DOM — wait for it
+      // Script tag is in the DOM — if it already finished loading the global is present
+      if (window.google?.accounts) {
+        resolve();
+        return;
+      }
       existing.addEventListener('load', () => resolve());
       existing.addEventListener('error', () => reject(new Error('GIS script failed to load')));
       return;

@@ -94,10 +94,13 @@ export function SurveyRunner() {
   });
 
   // Also fetch answered so we can filter already-seen questions
+  // session-stable: disable focus-refetch so window refocus can't reset the queue mid-survey
   const { data: answered } = useQuery({
     queryKey: ['answered'],
     queryFn: () => api.answered(),
     enabled: !!token,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });
 
   // Fetch community stats (public endpoint — no auth needed)
@@ -144,6 +147,8 @@ export function SurveyRunner() {
         answerTimeMs: vars.answerTimeMs,
       }),
     onSuccess: (data: SubmitResponseResponse) => {
+      // Keep the answered set fresh after each submission without relying on focus-refetch
+      queryClient.invalidateQueries({ queryKey: ['answered'] });
       setAnsweredCount((c) => c + 1);
       setTotalPoints((p) => p + data.pointsEarned);
       if (data.percentileToday != null) {
@@ -229,9 +234,28 @@ export function SurveyRunner() {
     );
   }
 
-  // No surveys
+  // Completion — checked BEFORE the queue-empty guard so it always renders deterministically
+  if (isComplete) {
+    return (
+      <div className="px-4 py-8">
+        <Card variant="elevated" padding="none">
+          <CompletionCard
+            questionsAnswered={answeredCount}
+            pointsEarned={totalPoints}
+            newBadges={allNewBadges}
+            surveyId={activeSurveyId ?? undefined}
+            onReset={handleReset}
+            answeredToday={communityStats?.answeredToday}
+            percentileToday={lastPercentileToday}
+          />
+        </Card>
+      </div>
+    );
+  }
+
+  // No surveys / empty queue
   if (!surveys || surveys.length === 0 || queue.length === 0 || !currentQuestion) {
-    if (isComplete || answeredCount > 0) {
+    if (answeredCount > 0) {
       return (
         <div className="px-4 py-8">
           <Card variant="elevated" padding="none">
@@ -253,25 +277,6 @@ export function SurveyRunner() {
         <span className="text-5xl">📭</span>
         <h2 className="text-xl font-bold text-brand-900">{t('survey.no_surveys')}</h2>
         <p className="text-brand-400">{t('survey.no_surveys_sub')}</p>
-      </div>
-    );
-  }
-
-  // Completion
-  if (isComplete) {
-    return (
-      <div className="px-4 py-8">
-        <Card variant="elevated" padding="none">
-          <CompletionCard
-            questionsAnswered={answeredCount}
-            pointsEarned={totalPoints}
-            newBadges={allNewBadges}
-            surveyId={activeSurveyId ?? undefined}
-            onReset={handleReset}
-            answeredToday={communityStats?.answeredToday}
-            percentileToday={lastPercentileToday}
-          />
-        </Card>
       </div>
     );
   }

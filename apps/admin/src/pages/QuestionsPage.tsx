@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AdminQuestionDto, CreateQuestionRequest, ChoiceOptionDto } from '@mhm/contracts';
 import { QuestionType, Category, TargetGender, TargetLanguage, Cadence } from '@mhm/shared';
@@ -17,23 +17,30 @@ interface SurveyOption {
 }
 
 // ─── Option editor for SINGLE_CHOICE ─────────────────────────────────────────
+// Each option row carries a stable numeric _rowId so React keys stay stable
+// across deletions (avoids controlled-input corruption when keying by index).
+type OptionRow = ChoiceOptionDto & { _rowId: number };
+
 function OptionsEditor({
   options,
   onChange,
 }: {
-  options: ChoiceOptionDto[];
-  onChange: (opts: ChoiceOptionDto[]) => void;
+  options: OptionRow[];
+  onChange: (opts: OptionRow[]) => void;
 }) {
+  const nextId = useRef(options.reduce((max, o) => Math.max(max, o._rowId), 0) + 1);
+
   const addOption = () => {
-    onChange([...options, { key: `opt${options.length + 1}`, labelHe: '', labelEn: '' }]);
+    const id = nextId.current++;
+    onChange([...options, { _rowId: id, key: `opt${options.length + 1}`, labelHe: '', labelEn: '' }]);
   };
 
-  const removeOption = (idx: number) => {
-    onChange(options.filter((_, i) => i !== idx));
+  const removeOption = (rowId: number) => {
+    onChange(options.filter((o) => o._rowId !== rowId));
   };
 
-  const updateOption = (idx: number, field: keyof ChoiceOptionDto, value: string) => {
-    onChange(options.map((o, i) => (i === idx ? { ...o, [field]: value } : o)));
+  const updateOption = (rowId: number, field: keyof ChoiceOptionDto, value: string) => {
+    onChange(options.map((o) => (o._rowId === rowId ? { ...o, [field]: value } : o)));
   };
 
   return (
@@ -44,30 +51,30 @@ function OptionsEditor({
           + הוסף
         </Button>
       </div>
-      {options.map((opt, idx) => (
-        <div key={idx} className="grid grid-cols-3 gap-2 items-end">
+      {options.map((opt) => (
+        <div key={opt._rowId} className="grid grid-cols-3 gap-2 items-end">
           <Input
             placeholder="מפתח"
             value={opt.key}
-            onChange={(e) => updateOption(idx, 'key', e.target.value)}
+            onChange={(e) => updateOption(opt._rowId, 'key', e.target.value)}
           />
           <Input
             placeholder="עברית"
             value={opt.labelHe}
-            onChange={(e) => updateOption(idx, 'labelHe', e.target.value)}
+            onChange={(e) => updateOption(opt._rowId, 'labelHe', e.target.value)}
           />
           <div className="flex gap-2">
             <Input
               placeholder="English"
               value={opt.labelEn}
-              onChange={(e) => updateOption(idx, 'labelEn', e.target.value)}
+              onChange={(e) => updateOption(opt._rowId, 'labelEn', e.target.value)}
               className="flex-1"
             />
             <Button
               type="button"
               size="sm"
               variant="danger"
-              onClick={() => removeOption(idx)}
+              onClick={() => removeOption(opt._rowId)}
               className="flex-shrink-0"
             >
               ✕
@@ -161,7 +168,7 @@ type FormState = {
   category: Category;
   scaleMin: string;
   scaleMax: string;
-  options: ChoiceOptionDto[];
+  options: OptionRow[];
   imageUrl: string;
   expiresAfterCycles: string;
   targetingAgeMin: string;
@@ -181,8 +188,8 @@ const defaultForm = (surveyId = ''): FormState => ({
   scaleMin: '1',
   scaleMax: '10',
   options: [
-    { key: 'opt1', labelHe: '', labelEn: '' },
-    { key: 'opt2', labelHe: '', labelEn: '' },
+    { _rowId: 1, key: 'opt1', labelHe: '', labelEn: '' },
+    { _rowId: 2, key: 'opt2', labelHe: '', labelEn: '' },
   ],
   imageUrl: '',
   expiresAfterCycles: '',
@@ -199,13 +206,14 @@ function CreateQuestionModal({ open, onClose, surveys, defaultSurveyId }: Create
   const [form, setForm] = useState<FormState>(() => defaultForm(defaultSurveyId));
   const [error, setError] = useState('');
 
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  const set = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setForm((f) => ({ ...f, [key]: value })), []);
 
   const mutation = useMutation({
     mutationFn: (body: CreateQuestionRequest) => adminApi.createQuestion(body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['questions'] });
+      qc.invalidateQueries({ queryKey: ['surveys'] });
       setForm(defaultForm(defaultSurveyId));
       onClose();
     },
@@ -217,6 +225,40 @@ function CreateQuestionModal({ open, onClose, surveys, defaultSurveyId }: Create
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // ── Client-side validation ────────────────────────────────────────────────
+    if (form.type === QuestionType.SCALE) {
+      const min = parseInt(form.scaleMin, 10);
+      const max = parseInt(form.scaleMax, 10);
+      if (!Number.isFinite(min) || !Number.isFinite(max) || min >= max) {
+        setError('ערך מינימלי חייב להיות קטן מערך מקסימלי בסקאלה');
+        return;
+      }
+    }
+
+    if (form.type === QuestionType.SINGLE_CHOICE) {
+      if (form.options.length < 2) {
+        setError('נדרשות לפחות שתי אפשרויות בחירה');
+        return;
+      }
+      const hasEmpty = form.options.some(
+        (o) => !o.key.trim() || !o.labelHe.trim() || !o.labelEn.trim(),
+      );
+      if (hasEmpty) {
+        setError('כל אפשרות חייבת לכלול מפתח, תווית בעברית ותווית באנגלית');
+        return;
+      }
+    }
+
+    if (form.targetingAgeMin && form.targetingAgeMax) {
+      const ageMin = parseInt(form.targetingAgeMin, 10);
+      const ageMax = parseInt(form.targetingAgeMax, 10);
+      if (Number.isFinite(ageMin) && Number.isFinite(ageMax) && ageMin > ageMax) {
+        setError('גיל מינימלי חייב להיות קטן או שווה לגיל מקסימלי');
+        return;
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     const body: CreateQuestionRequest = {
       surveyId: form.surveyId,
@@ -232,7 +274,8 @@ function CreateQuestionModal({ open, onClose, surveys, defaultSurveyId }: Create
     }
 
     if (form.type === QuestionType.SINGLE_CHOICE) {
-      body.options = form.options;
+      // Strip internal _rowId before sending to the API.
+      body.options = form.options.map(({ _rowId: _id, ...opt }) => opt);
     }
 
     if (form.type === QuestionType.TEXT_IMAGE && form.imageUrl) {
@@ -631,6 +674,7 @@ export function QuestionsPage() {
       </Card>
 
       <CreateQuestionModal
+        key={selectedSurveyId}
         open={showCreate}
         onClose={() => setShowCreate(false)}
         surveys={surveyOptions}

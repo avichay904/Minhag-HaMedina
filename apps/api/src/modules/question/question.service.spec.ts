@@ -78,6 +78,10 @@ function buildPrismaMock() {
       count: vi.fn(),
       create: vi.fn(),
     },
+    surveyCycle: {
+      // createQuestion looks up the current max cycle sequence to set startCycleSequence.
+      aggregate: vi.fn().mockResolvedValue({ _max: { sequence: null } }),
+    },
   };
 }
 

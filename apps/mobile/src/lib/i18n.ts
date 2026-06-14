@@ -24,6 +24,7 @@ export const strings = {
     surveyComplete: 'כל הכבוד!',
     surveyCompleteSubtitle: 'סיימת את כל השאלות',
     pointsEarned: 'נקודות שנצברו',
+    questionsAnswered: 'שאלות שענית',
     newBadges: 'תגים חדשים',
     backToSurveys: 'חזור לסקרים',
     yes: 'כן',
@@ -99,6 +100,7 @@ export const strings = {
     surveyComplete: 'Well done!',
     surveyCompleteSubtitle: 'You answered all questions',
     pointsEarned: 'Points earned',
+    questionsAnswered: 'Questions answered',
     newBadges: 'New badges',
     backToSurveys: 'Back to surveys',
     yes: 'Yes',
@@ -184,7 +186,7 @@ interface I18nContextValue {
 export const I18nContext = createContext<I18nContextValue>({
   lang: 'he',
   setLang: () => {},
-  t: (key) => strings.he[key] ?? key,
+  t: (key) => strings[_lang][key] ?? strings.he[key] ?? key,
 });
 
 export function I18nProvider({ children }: { children: React.ReactNode }): React.ReactElement {
