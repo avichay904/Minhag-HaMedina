@@ -54,6 +54,12 @@ export const ENDPOINTS = {
   adminListSurveys: { method: 'GET', path: '/surveys' },
   adminListSurveyCycles: { method: 'GET', path: '/surveys/:id/cycles' },
 
+  // Admin — Cycle lifecycle
+  adminOpenCycle: { method: 'POST', path: '/surveys/:id/cycles' },
+  adminCloseCycle: { method: 'POST', path: '/cycles/:id/close' },
+  adminApproveCycle: { method: 'POST', path: '/cycles/:id/approve' },
+  adminPublishCycle: { method: 'POST', path: '/cycles/:id/publish' },
+
   // Admin — Question management
   adminListQuestions: { method: 'GET', path: '/questions' },
 

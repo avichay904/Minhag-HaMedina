@@ -43,6 +43,7 @@ export function SurveyScreen(): React.ReactElement {
   const [answerState, setAnswerState] = useState<AnswerState>({ type: 'idle' });
   const [surveyDone, setSurveyDone] = useState(false);
   const [totalPoints, setTotalPoints] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
   const [allNewBadges, setAllNewBadges] = useState<BadgeType[]>([]);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [percentileToday, setPercentileToday] = useState<number | null>(null);
@@ -74,6 +75,7 @@ export function SurveyScreen(): React.ReactElement {
     mutationFn: submitResponse,
     onSuccess: (result) => {
       setTotalPoints((p) => p + result.pointsEarned);
+      setAnsweredCount((c) => c + 1);
       const newB = result.newBadges as BadgeType[];
       setAllNewBadges((prev) => {
         const merged = [...prev];
@@ -127,6 +129,7 @@ export function SurveyScreen(): React.ReactElement {
     setSurveyDone(false);
     setQuestionIdx(0);
     setTotalPoints(0);
+    setAnsweredCount(0);
     setAllNewBadges([]);
     setPercentileToday(null);
     setAnswerState({ type: 'idle' });
@@ -193,7 +196,7 @@ export function SurveyScreen(): React.ReactElement {
               <Text style={styles.statLabel}>{t('pointsEarned')}</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{questions.length}</Text>
+              <Text style={styles.statNumber}>{answeredCount}</Text>
               <Text style={styles.statLabel}>{t('questionsAnswered')}</Text>
             </View>
           </View>

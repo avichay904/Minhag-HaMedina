@@ -13,8 +13,14 @@ import {
 } from '../src/index.js';
 
 describe('endpoints', () => {
-  it('exposes all 26 routes (19 Phase-A + 7 admin)', () => {
-    expect(Object.keys(ENDPOINTS)).toHaveLength(26);
+  it('exposes all 30 routes (19 Phase-A + 11 admin)', () => {
+    expect(Object.keys(ENDPOINTS)).toHaveLength(30);
+  });
+  it('includes the cycle-lifecycle routes', () => {
+    expect(ENDPOINTS.adminOpenCycle).toEqual({ method: 'POST', path: '/surveys/:id/cycles' });
+    expect(ENDPOINTS.adminCloseCycle).toEqual({ method: 'POST', path: '/cycles/:id/close' });
+    expect(ENDPOINTS.adminApproveCycle).toEqual({ method: 'POST', path: '/cycles/:id/approve' });
+    expect(ENDPOINTS.adminPublishCycle).toEqual({ method: 'POST', path: '/cycles/:id/publish' });
   });
   it('includes the image-upload route', () => {
     expect(ENDPOINTS.uploadImage).toEqual({ method: 'POST', path: '/uploads/image' });

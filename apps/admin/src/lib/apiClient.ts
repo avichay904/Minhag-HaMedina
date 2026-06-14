@@ -143,18 +143,18 @@ export const adminApi = {
     return request('GET', path);
   },
 
-  // Cycles (literal paths — not in ENDPOINTS)
+  // Cycle lifecycle (from the ENDPOINTS contract)
   openCycle(surveyId: string): Promise<AdminCycleRow> {
-    return request('POST', `/surveys/${surveyId}/cycles`);
+    return request('POST', buildPath(ENDPOINTS.adminOpenCycle.path, { id: surveyId }));
   },
   closeCycle(cycleId: string): Promise<AdminCycleRow> {
-    return request('POST', `/cycles/${cycleId}/close`);
+    return request('POST', buildPath(ENDPOINTS.adminCloseCycle.path, { id: cycleId }));
   },
   approveCycle(cycleId: string): Promise<AdminCycleRow> {
-    return request('POST', `/cycles/${cycleId}/approve`);
+    return request('POST', buildPath(ENDPOINTS.adminApproveCycle.path, { id: cycleId }));
   },
   publishCycle(cycleId: string): Promise<AdminCycleRow> {
-    return request('POST', `/cycles/${cycleId}/publish`);
+    return request('POST', buildPath(ENDPOINTS.adminPublishCycle.path, { id: cycleId }));
   },
 
   // Questions
